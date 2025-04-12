@@ -1,23 +1,28 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { mockPages } from "@/lib/mockData";
 import { useNavigate } from "react-router-dom";
+
 type PageSelectionModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
+
 const PageSelectionModal = ({
   open,
   onOpenChange
 }: PageSelectionModalProps) => {
   const navigate = useNavigate();
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
+  
   const handleSelectPage = () => {
     if (!selectedPageId) return;
     onOpenChange(false);
     navigate('/dashboard');
   };
+  
   return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl bg-white border-neutral-200 shadow-xl">
         <DialogHeader>
@@ -51,11 +56,18 @@ const PageSelectionModal = ({
           <Button type="button" variant="outline" className="text-neutral-600 border-neutral-300 hover:bg-neutral-100" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="button" onClick={handleSelectPage} disabled={!selectedPageId} className="bg-neutral-900 hover:bg-neutral-700 text-zinc-950">
+          <Button 
+            type="button" 
+            onClick={handleSelectPage} 
+            disabled={!selectedPageId} 
+            className="bg-black text-white border border-white hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+          >
             Continue
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>;
 };
+
 export default PageSelectionModal;
+
