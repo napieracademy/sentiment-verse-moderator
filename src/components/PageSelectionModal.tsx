@@ -80,7 +80,7 @@ const PageSelectionModal = ({ open, onOpenChange }: PageSelectionModalProps) => 
           ))}
         </div>
         
-        <DialogFooter>
+        <DialogFooter className="flex sm:flex-row sm:justify-end sm:space-x-2 pt-4 border-t border-neutral-100">
           <Button 
             type="button" 
             variant="outline" 
