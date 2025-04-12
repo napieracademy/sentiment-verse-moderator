@@ -8,11 +8,9 @@ const SelectPage = () => {
   const [isPageSelectionModalOpen, setIsPageSelectionModalOpen] = useState(false);
   
   useEffect(() => {
-    // Open the page selection modal automatically
     setIsPageSelectionModalOpen(true);
   }, []);
   
-  // When modal is closed without selecting, redirect back to home
   const handleModalOpenChange = (open: boolean) => {
     setIsPageSelectionModalOpen(open);
     if (!open) {
@@ -21,7 +19,8 @@ const SelectPage = () => {
   };
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="absolute inset-0 bg-gradient-to-br from-neutral-50 to-neutral-100 opacity-50" />
       <PageSelectionModal 
         open={isPageSelectionModalOpen} 
         onOpenChange={handleModalOpenChange} 
