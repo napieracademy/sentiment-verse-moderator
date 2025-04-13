@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { mockComments, Comment, Sentiment } from "@/lib/mockData";
 import {
@@ -9,12 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Card,
   CardContent,
@@ -34,16 +27,15 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Eye, EyeOff, ThumbsDown, ThumbsUp, MoreHorizontal, 
-  Trash2, MessageSquare, Tag, Filter, ChevronDown, 
-  ChevronUp, User, Store, Book
+  Eye, EyeOff, ThumbsDown, ThumbsUp, 
+  Trash2, MessageSquare, Tag, Filter,
+  ChevronDown, ChevronUp, User, Store, Book
 } from "lucide-react";
 import { format } from "date-fns";
 import { getSentimentColor } from "@/lib/mockData";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Aggiungiamo un tipo per i post
 type Post = {
   id: string;
   content: string;
@@ -53,7 +45,6 @@ type Post = {
   isPage: boolean;
 };
 
-// Creiamo dati mock per i post
 const mockPosts: Post[] = [
   {
     id: "post1",
@@ -97,7 +88,6 @@ const mockPosts: Post[] = [
   }
 ];
 
-// Creiamo dati mock per le menzioni
 const mockMentions = [
   {
     id: "mention1",
@@ -105,7 +95,7 @@ const mockMentions = [
     postContent: "Ho appena provato il caffè da @Caffè Napoletano ed è fantastico!",
     authorName: "Maria Verdi",
     authorProfilePic: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=60",
-    authorType: "user", // user o page
+    authorType: "user",
     timestamp: "2025-04-12T13:20:00Z",
     sentiment: "positive" as Sentiment
   },
@@ -131,10 +121,9 @@ const mockMentions = [
   }
 ];
 
-// Aggiungiamo informazioni sui commentatori
 const enhancedComments = mockComments.map(comment => ({
   ...comment,
-  isPage: comment.id === "comment2" || comment.id === "comment5" || comment.id === "comment9", // esempio di alcuni commenti da Pagine
+  isPage: comment.id === "comment2" || comment.id === "comment5" || comment.id === "comment9",
 }));
 
 const CommentTable = () => {
@@ -144,7 +133,7 @@ const CommentTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [contentType, setContentType] = useState<"comments" | "mentions" | "ratings">("comments");
   const [expandedPosts, setExpandedPosts] = useState<Record<string, boolean>>({
-    post1: true, // il primo post è espanso di default
+    post1: true,
     post2: false,
     post3: false,
     post4: false,
@@ -196,7 +185,6 @@ const CommentTable = () => {
     return matchesSentiment && matchesSearch;
   });
 
-  // Raggruppa i commenti per postId
   const commentsByPost = filteredComments.reduce((acc, comment) => {
     if (!acc[comment.postId]) {
       acc[comment.postId] = [];
@@ -242,7 +230,6 @@ const CommentTable = () => {
     }
   };
 
-  // Trova il post corrispondente a un ID
   const getPostById = (postId: string) => {
     return mockPosts.find(post => post.id === postId);
   };
@@ -350,36 +337,30 @@ const CommentTable = () => {
                                 </span>
                               </div>
                               
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Opzioni</span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => handleToggleHidden(comment.id)}>
-                                    {comment.hidden ? (
-                                      <>
-                                        <Eye className="mr-2 h-4 w-4" />
-                                        <span>Mostra commento</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <EyeOff className="mr-2 h-4 w-4" />
-                                        <span>Nascondi commento</span>
-                                      </>
-                                    )}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => handleDelete(comment.id)}
-                                    className="text-red-600"
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    <span>Elimina commento</span>
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              <div className="flex space-x-1">
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8 bg-gray-50 hover:bg-gray-100"
+                                  onClick={() => handleToggleHidden(comment.id)}
+                                  title={comment.hidden ? "Mostra commento" : "Nascondi commento"}
+                                >
+                                  {comment.hidden ? (
+                                    <Eye className="h-4 w-4 text-blue-600" />
+                                  ) : (
+                                    <EyeOff className="h-4 w-4 text-gray-600" />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8 bg-gray-50 hover:bg-red-50"
+                                  onClick={() => handleDelete(comment.id)}
+                                  title="Elimina commento"
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-600" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
                           
@@ -465,12 +446,11 @@ const CommentTable = () => {
   };
 
   const renderRatingsView = () => {
-    // Filtra commenti che sembrano valutazioni (per questa demo, usiamo solo i positivi/negativi)
     const ratings = filteredComments
       .filter(comment => comment.sentiment !== "neutral")
       .map(comment => ({
         ...comment,
-        rating: comment.sentiment === "positive" ? Math.floor(Math.random() * 2) + 4 : Math.floor(Math.random() * 2) + 1 // 4-5 per positivi, 1-2 per negativi
+        rating: comment.sentiment === "positive" ? Math.floor(Math.random() * 2) + 4 : Math.floor(Math.random() * 2) + 1
       }));
 
     return (
@@ -537,6 +517,31 @@ const CommentTable = () => {
                   <p className="text-sm border-l-4 border-gray-200 pl-3">
                     {rating.content}
                   </p>
+                  
+                  <div className="flex justify-end mt-2 space-x-1">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8 bg-gray-50 hover:bg-gray-100"
+                      onClick={() => handleToggleHidden(rating.id)}
+                      title={rating.hidden ? "Mostra recensione" : "Nascondi recensione"}
+                    >
+                      {rating.hidden ? (
+                        <Eye className="h-4 w-4 text-blue-600" />
+                      ) : (
+                        <EyeOff className="h-4 w-4 text-gray-600" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8 bg-gray-50 hover:bg-red-50"
+                      onClick={() => handleDelete(rating.id)}
+                      title="Elimina recensione"
+                    >
+                      <Trash2 className="h-4 w-4 text-red-600" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
             </Card>
