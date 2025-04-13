@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -164,7 +163,11 @@ const MessagesInbox = () => {
             >
               <div className="relative">
                 <Avatar>
-                  <img src={conversation.sender.avatar} alt={conversation.sender.name} />
+                  <AvatarImage 
+                    src={conversation.sender.avatar} 
+                    alt={conversation.sender.name} 
+                    className="object-cover"
+                  />
                 </Avatar>
                 {conversation.sender.isOnline && (
                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
@@ -196,9 +199,10 @@ const MessagesInbox = () => {
             {/* Chat Header */}
             <div className="p-3 border-b flex items-center gap-3">
               <Avatar>
-                <img 
+                <AvatarImage 
                   src={getCurrentConversation()?.sender.avatar} 
                   alt={getCurrentConversation()?.sender.name} 
+                  className="object-cover"
                 />
               </Avatar>
               <div>
