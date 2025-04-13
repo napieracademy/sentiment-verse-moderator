@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -120,7 +119,7 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
                       <p className="font-medium">Contenuto pubblico</p>
                       <p className="text-muted-foreground">pages_read_user_content</p>
                       <div className="mt-2 text-xs text-neutral-500 max-w-sm">
-                        L'autorizzazione pages_read_user_content consente alla nostra app di leggere contenuti generati dagli utenti sulla Pagina, ad esempio post, commenti e valutazioni, e di eliminare i commenti degli utenti sui post della Pagina. Permette inoltre di leggere i post in cui è taggata la Pagina.
+                        L'autorizzazione pages_read_user_content consente alla nostra app di leggere contenuti generati dagli utenti sulla Pagina, ad esempio post, commenti e valutazioni, e di eliminare i commenti degli utenti sui post della Pagina. Permette inoltre di leggere i post in cui è taggata la Pagina. L'uso consentito per questa autorizzazione è la lettura dei contenuti degli utenti e di altre Pagine sulla Pagina se necessario per la gestione della Pagina.
                       </div>
                     </div>
                     <div className="h-4 w-4 rounded-full bg-blue-500"></div>
