@@ -5,6 +5,7 @@ import CommentTable from "@/components/CommentTable";
 import SentimentChart from "@/components/SentimentChart";
 import SentimentStats from "@/components/SentimentStats";
 import ContentPermissionInfo from "@/components/ContentPermissionInfo";
+import ModerationSettings from "@/components/ModerationSettings";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MessageSquare, Mail, Shield, Zap, BarChart2 } from "lucide-react";
@@ -120,18 +121,7 @@ const Dashboard = () => {
             </TabsContent>
             
             <TabsContent value="moderation">
-              <div className="bg-white p-6 rounded-lg border shadow-sm">
-                <div className="flex items-center justify-center h-60">
-                  <div className="text-center">
-                    <Shield className="mx-auto h-10 w-10 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Strumenti di Moderazione</h3>
-                    <p className="text-muted-foreground max-w-md">
-                      Imposta regole automatiche per la moderazione dei contenuti e gestisci 
-                      le parole bloccate e i filtri di spam.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <ModerationSettings />
             </TabsContent>
             
             <TabsContent value="automation">
