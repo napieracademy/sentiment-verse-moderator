@@ -5,6 +5,8 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
+  DrawerTitle,
+  DrawerDescription,
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { 
@@ -37,15 +39,17 @@ const DrawerMenu = ({ activeTab, setActiveTab }: DrawerMenuProps) => {
           </Button>
         </DrawerTrigger>
         <DrawerContent 
-          className="max-h-[80vh] w-full max-w-[250px] left-6 right-auto bottom-6 top-auto rounded-lg" 
-          style={{ transform: 'translateY(-100%)' }}
+          className="max-h-[80vh] w-full max-w-[250px] left-6 right-auto bottom-[72px] top-auto rounded-lg" 
         >
+          <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
           <div className="px-4 py-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold">Menu</h2>
+              <DrawerTitle className="text-xl font-bold">Menu</DrawerTitle>
+              <DrawerDescription className="sr-only">Navigation menu</DrawerDescription>
               <DrawerClose asChild>
                 <Button variant="ghost" size="icon">
                   <ChevronUp className="h-4 w-4" />
+                  <span className="sr-only">Close</span>
                 </Button>
               </DrawerClose>
             </div>
