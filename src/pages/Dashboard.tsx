@@ -4,6 +4,7 @@ import PageOverview from "@/components/PageOverview";
 import CommentTable from "@/components/CommentTable";
 import SentimentChart from "@/components/SentimentChart";
 import SentimentStats from "@/components/SentimentStats";
+import ContentPermissionInfo from "@/components/ContentPermissionInfo";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
@@ -60,6 +61,8 @@ const Dashboard = () => {
       <main className="flex-1 p-6 bg-gray-50">
         <div className="container space-y-6">
           <PageOverview />
+          
+          <ContentPermissionInfo />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <SentimentChart />
