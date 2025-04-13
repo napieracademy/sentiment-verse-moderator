@@ -44,11 +44,11 @@ const Index = () => {
         <div className="container flex flex-col md:flex-row items-center justify-between">
           <div className="md:w-1/2 space-y-6">
             <h1 className="text-4xl md:text-5xl font-bold">
-              Analisi del sentiment e moderazione intelligente
+              Analisi del sentiment e moderazione intelligente con AI
             </h1>
             <p className="text-lg text-gray-600">
               Monitora, analizza e modera i commenti della tua Pagina Facebook
-              con insight basati sull'analisi del sentiment in tempo reale.
+              con insight basati sull'analisi del sentiment in tempo reale grazie all'intelligenza artificiale avanzata.
             </p>
             <div className="pt-4">
               <Button
@@ -62,8 +62,8 @@ const Index = () => {
           </div>
           <div className="md:w-1/2 mt-10 md:mt-0">
             <img
-              src="/lovable-uploads/a150210f-9803-4a51-a758-3a0a26941550.png"
-              alt="Sentiment Analysis Dashboard"
+              src="/lovable-uploads/8d0d556f-72f5-48e4-aa29-bab6cec904a9.png"
+              alt="Sentiment Analysis Dashboard powered by AI"
               className="rounded-lg shadow-xl"
             />
           </div>
@@ -207,9 +207,9 @@ const Index = () => {
                   <path d="M6 12v5c0 2 1 3 3 3h6c2 0 3-1 3-3v-5" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Formazione Personalizzata</h3>
+              <h3 className="text-xl font-semibold mb-2">Intelligenza Artificiale Avanzata</h3>
               <p className="text-gray-600">
-                Perfeziona l'analisi del sentiment addestrando il sistema per riconoscere specifiche espressioni rilevanti per il tuo settore.
+                Sfrutta algoritmi di AI avanzati per analizzare il sentiment e rilevare automaticamente espressioni specifiche rilevanti per il tuo settore.
               </p>
             </div>
           </div>
