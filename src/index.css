@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -95,7 +96,7 @@
   }
 
   #root {
-    @apply max-w-[1100px] mx-auto; // Centers the content and sets max-width to 1100px
+    @apply max-w-[1100px] mx-auto; /* Centers the content and sets max-width to 1100px */
   }
 }
 
