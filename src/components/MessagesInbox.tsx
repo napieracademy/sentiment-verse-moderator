@@ -4,7 +4,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Send } from 'lucide-react';
+import { Search, Send, Mail } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
 // Simulation of messages data
