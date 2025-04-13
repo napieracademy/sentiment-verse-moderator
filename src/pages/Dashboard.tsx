@@ -1,14 +1,13 @@
-
 import { Button } from "@/components/ui/button";
 import PageOverview from "@/components/PageOverview";
 import CommentTable from "@/components/CommentTable";
 import SentimentChart from "@/components/SentimentChart";
-import SentimentStats from "@/components/SentimentStats";
 import ContentPermissionInfo from "@/components/ContentPermissionInfo";
 import ModerationSettings from "@/components/ModerationSettings";
 import MessagesInbox from "@/components/MessagesInbox";
 import AutomationRules from "@/components/AutomationRules";
 import InsightsPanel from "@/components/InsightsPanel";
+import SentimentMasonry from "@/components/SentimentMasonry";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MessageSquare, Mail, Shield, Zap, BarChart2 } from "lucide-react";
@@ -72,13 +71,6 @@ const Dashboard = () => {
           
           <ContentPermissionInfo />
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <SentimentChart />
-            <div>
-              <SentimentStats />
-            </div>
-          </div>
-          
           {/* Main Dashboard Tabs */}
           <Tabs defaultValue="comments" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-5 mb-6">
@@ -106,6 +98,7 @@ const Dashboard = () => {
             
             <TabsContent value="comments">
               <CommentTable />
+              <SentimentMasonry />
             </TabsContent>
             
             <TabsContent value="messages">
