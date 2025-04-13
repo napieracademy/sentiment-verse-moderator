@@ -98,7 +98,7 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
                   </div>
                 </div>
                 
-                <div className="pl-7 space-y-2">
+                <div className="pl-7 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">Elenco delle Pagine gestite</p>
@@ -119,16 +119,21 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
                     <div>
                       <p className="font-medium">Contenuto pubblico</p>
                       <p className="text-muted-foreground">pages_read_user_content</p>
+                      <div className="mt-2 text-xs text-neutral-500 max-w-sm">
+                        L'autorizzazione pages_read_user_content consente alla nostra app di leggere contenuti generati dagli utenti sulla Pagina, ad esempio post, commenti e valutazioni, e di eliminare i commenti degli utenti sui post della Pagina. Permette inoltre di leggere i post in cui è taggata la Pagina.
+                      </div>
                     </div>
                     <div className="h-4 w-4 rounded-full bg-blue-500"></div>
                   </div>
                 </div>
               </div>
               
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground mt-4">
                 <p>
                   SentimentVerse utilizza questi dati per fornire servizi di analisi del sentiment e moderazione dei commenti
-                  per le tue Pagine. I dati non saranno condivisi con terze parti. Questa applicazione è soggetta ai 
+                  per le tue Pagine. Questi permessi ci permettono di leggere contenuti generati dagli utenti per la gestione della Pagina 
+                  e di raccogliere dati statistici aggregati, privi di riferimenti personali, per migliorare il nostro servizio.
+                  I dati non saranno condivisi con terze parti. Questa applicazione è soggetta ai 
                   <a href="#" className="text-facebook hover:underline"> Termini di Servizio</a> e alla 
                   <a href="#" className="text-facebook hover:underline"> Privacy Policy</a>.
                 </p>
