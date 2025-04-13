@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageSquare, Tag, ThumbsUp, Info } from "lucide-react";
+import { MessageSquare, Tag, ThumbsUp, Info, Users, Monitor } from "lucide-react";
 
 const ContentPermissionInfo = () => {
   return (
@@ -25,7 +25,9 @@ const ContentPermissionInfo = () => {
               <MessageSquare className="h-5 w-5 text-facebook mt-0.5" />
               <div>
                 <h3 className="font-medium text-sm">Commenti</h3>
-                <p className="text-xs text-muted-foreground">Visualizza e modera i commenti sui post della tua Pagina</p>
+                <p className="text-xs text-muted-foreground">
+                  Visualizza e modera commenti di utenti e Pagine sui tuoi post
+                </p>
               </div>
             </div>
             
@@ -33,7 +35,9 @@ const ContentPermissionInfo = () => {
               <Tag className="h-5 w-5 text-facebook mt-0.5" />
               <div>
                 <h3 className="font-medium text-sm">Menzioni</h3>
-                <p className="text-xs text-muted-foreground">Visualizza i post in cui la tua Pagina è stata taggata</p>
+                <p className="text-xs text-muted-foreground">
+                  Analizza i post in cui la tua Pagina è stata taggata
+                </p>
               </div>
             </div>
             
@@ -41,14 +45,37 @@ const ContentPermissionInfo = () => {
               <ThumbsUp className="h-5 w-5 text-facebook mt-0.5" />
               <div>
                 <h3 className="font-medium text-sm">Valutazioni</h3>
-                <p className="text-xs text-muted-foreground">Visualizza e gestisci le recensioni della tua Pagina</p>
+                <p className="text-xs text-muted-foreground">
+                  Gestisci le recensioni e feedback sulla tua Pagina
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-start space-x-2 bg-white p-3 rounded-md border border-blue-100">
+              <Users className="h-5 w-5 text-facebook mt-0.5" />
+              <div>
+                <h3 className="font-medium text-sm">Identificazione</h3>
+                <p className="text-xs text-muted-foreground">
+                  Distingui tra commenti di utenti e altre Pagine
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-start space-x-2 bg-white p-3 rounded-md border border-blue-100">
+              <Monitor className="h-5 w-5 text-facebook mt-0.5" />
+              <div>
+                <h3 className="font-medium text-sm">Analisi Dettagliata</h3>
+                <p className="text-xs text-muted-foreground">
+                  Esplora in profondità tutti i contenuti relativi alla Pagina
+                </p>
               </div>
             </div>
           </div>
           
           <p className="text-xs text-muted-foreground italic">
-            L'autorizzazione pages_read_user_content consente a SentimentVerse di leggere tutti i contenuti generati dagli utenti sulla tua Pagina 
-            e di eliminare i commenti quando necessario. Questo permette un'efficace gestione e moderazione di tutti i contenuti pubblici.
+            L'autorizzazione pages_read_user_content consente a SentimentVerse di leggere tutti i contenuti generati dagli utenti sulla tua Pagina, 
+            distinguere tra utenti e Pagine, e gestire i commenti in modo nidificato per post. Questo permette un'analisi approfondita 
+            e una moderazione efficace di tutti i contenuti pubblici.
           </p>
         </div>
       </CardContent>
