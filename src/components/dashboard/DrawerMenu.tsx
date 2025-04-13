@@ -36,7 +36,10 @@ const DrawerMenu = ({ activeTab, setActiveTab }: DrawerMenuProps) => {
             <Menu className="h-6 w-6" />
           </Button>
         </DrawerTrigger>
-        <DrawerContent className="max-h-[80vh]">
+        <DrawerContent 
+          className="max-h-[80vh] w-full max-w-[250px] left-6 right-auto bottom-6 top-auto rounded-lg" 
+          style={{ transform: 'translateY(-100%)' }}
+        >
           <div className="px-4 py-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">Menu</h2>
