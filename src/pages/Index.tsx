@@ -146,6 +146,72 @@ const Index = () => {
                 dettagliate sull'engagement della tua Pagina.
               </p>
             </div>
+
+            <div className="p-6 border rounded-lg shadow-sm">
+              <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-6 w-6 text-facebook"
+                >
+                  <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" />
+                  <path d="m8.5 8.5 7 7" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Automazione delle Risposte</h3>
+              <p className="text-gray-600">
+                Crea regole personalizzate per rispondere automaticamente ai commenti in base al loro sentiment e contenuto.
+              </p>
+            </div>
+
+            <div className="p-6 border rounded-lg shadow-sm">
+              <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-6 w-6 text-facebook"
+                >
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Filtri di Contenuto</h3>
+              <p className="text-gray-600">
+                Filtra automaticamente contenuti inappropriati e spam utilizzando regole personalizzabili per mantenere le conversazioni costruttive.
+              </p>
+            </div>
+
+            <div className="p-6 border rounded-lg shadow-sm">
+              <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-6 w-6 text-facebook"
+                >
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                  <path d="M6 12v5c0 2 1 3 3 3h6c2 0 3-1 3-3v-5" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Formazione Personalizzata</h3>
+              <p className="text-gray-600">
+                Perfeziona l'analisi del sentiment addestrando il sistema per riconoscere specifiche espressioni rilevanti per il tuo settore.
+              </p>
+            </div>
           </div>
         </div>
       </section>
