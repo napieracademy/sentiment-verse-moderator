@@ -6,6 +6,9 @@ import SentimentChart from "@/components/SentimentChart";
 import SentimentStats from "@/components/SentimentStats";
 import ContentPermissionInfo from "@/components/ContentPermissionInfo";
 import ModerationSettings from "@/components/ModerationSettings";
+import MessagesInbox from "@/components/MessagesInbox";
+import AutomationRules from "@/components/AutomationRules";
+import InsightsPanel from "@/components/InsightsPanel";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MessageSquare, Mail, Shield, Zap, BarChart2 } from "lucide-react";
@@ -106,18 +109,7 @@ const Dashboard = () => {
             </TabsContent>
             
             <TabsContent value="messages">
-              <div className="bg-white p-6 rounded-lg border shadow-sm">
-                <div className="flex items-center justify-center h-60">
-                  <div className="text-center">
-                    <Mail className="mx-auto h-10 w-10 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Messaggi della Pagina</h3>
-                    <p className="text-muted-foreground max-w-md">
-                      Visualizza e gestisci tutti i messaggi privati inviati alla tua Pagina Facebook.
-                      Questa funzionalità richiede l'autorizzazione pages_messaging.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <MessagesInbox />
             </TabsContent>
             
             <TabsContent value="moderation">
@@ -125,33 +117,11 @@ const Dashboard = () => {
             </TabsContent>
             
             <TabsContent value="automation">
-              <div className="bg-white p-6 rounded-lg border shadow-sm">
-                <div className="flex items-center justify-center h-60">
-                  <div className="text-center">
-                    <Zap className="mx-auto h-10 w-10 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Automazione Risposte</h3>
-                    <p className="text-muted-foreground max-w-md">
-                      Configura risposte automatiche, messaggi programmati e flussi di lavoro 
-                      per gestire automaticamente le interazioni con gli utenti.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <AutomationRules />
             </TabsContent>
             
             <TabsContent value="insights">
-              <div className="bg-white p-6 rounded-lg border shadow-sm">
-                <div className="flex items-center justify-center h-60">
-                  <div className="text-center">
-                    <BarChart2 className="mx-auto h-10 w-10 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Analisi Approfondite</h3>
-                    <p className="text-muted-foreground max-w-md">
-                      Ottieni insight dettagliati sulle performance dei contenuti, 
-                      l'engagement degli utenti e le tendenze di crescita della tua Pagina.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <InsightsPanel />
             </TabsContent>
           </Tabs>
         </div>
