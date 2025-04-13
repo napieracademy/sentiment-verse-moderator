@@ -62,12 +62,12 @@ const DrawerMenu = ({ activeTab, setActiveTab }: DrawerMenuProps) => {
                 </CollapsibleTrigger>
               </div>
               <CollapsibleContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                <div className="flex flex-col space-y-1 mt-2">
                   {menuItems.map((item) => (
                     <Button
                       key={item.value}
-                      variant={activeTab === item.value ? "default" : "outline"}
-                      className={`flex flex-col h-20 items-center justify-center gap-1 relative ${
+                      variant={activeTab === item.value ? "default" : "ghost"}
+                      className={`justify-start h-10 px-2 ${
                         activeTab === item.value ? "bg-primary text-primary-foreground" : ""
                       }`}
                       onClick={() => {
@@ -75,10 +75,10 @@ const DrawerMenu = ({ activeTab, setActiveTab }: DrawerMenuProps) => {
                         setMenuOpen(false);
                       }}
                     >
-                      <item.icon className="h-5 w-5" />
-                      <span className="text-xs">{item.title}</span>
+                      <item.icon className="h-5 w-5 mr-2" />
+                      <span>{item.title}</span>
                       {item.badge && (
-                        <div className="absolute top-1 right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
+                        <div className="ml-auto bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
                           {item.badge}
                         </div>
                       )}
@@ -102,12 +102,12 @@ const DrawerMenu = ({ activeTab, setActiveTab }: DrawerMenuProps) => {
                 </CollapsibleTrigger>
               </div>
               <CollapsibleContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                <div className="flex flex-col space-y-1 mt-2">
                   {toolItems.map((item) => (
                     <Button
                       key={item.value}
-                      variant={activeTab === item.value ? "default" : "outline"}
-                      className={`flex flex-col h-20 items-center justify-center gap-1 ${
+                      variant={activeTab === item.value ? "default" : "ghost"}
+                      className={`justify-start h-10 px-2 ${
                         activeTab === item.value ? "bg-primary text-primary-foreground" : ""
                       }`}
                       onClick={() => {
@@ -115,8 +115,8 @@ const DrawerMenu = ({ activeTab, setActiveTab }: DrawerMenuProps) => {
                         setMenuOpen(false);
                       }}
                     >
-                      <item.icon className="h-5 w-5" />
-                      <span className="text-xs">{item.title}</span>
+                      <item.icon className="h-5 w-5 mr-2" />
+                      <span>{item.title}</span>
                     </Button>
                   ))}
                 </div>
