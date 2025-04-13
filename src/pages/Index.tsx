@@ -62,8 +62,8 @@ const Index = () => {
           </div>
           <div className="md:w-1/2 mt-10 md:mt-0">
             <img
-              src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800&auto=format&fit=crop"
-              alt="Dashboard Analytics"
+              src="/lovable-uploads/a150210f-9803-4a51-a758-3a0a26941550.png"
+              alt="Sentiment Analysis Dashboard"
               className="rounded-lg shadow-xl"
             />
           </div>
