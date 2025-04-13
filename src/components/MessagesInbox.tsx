@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Send, Mail } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 
 // Simulation of messages data
 const mockMessages = [
@@ -140,128 +142,136 @@ const MessagesInbox = () => {
   };
 
   return (
-    <div className="bg-white border rounded-lg shadow-sm h-[600px] flex">
-      {/* Conversation List */}
-      <div className="w-1/3 border-r">
-        <div className="p-3 border-b">
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Cerca conversazioni..." 
-              className="pl-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-        <ScrollArea className="h-[555px]">
-          {filteredConversations.map(conversation => (
-            <div 
-              key={conversation.id} 
-              className={`p-3 border-b flex items-center gap-3 cursor-pointer hover:bg-gray-50 ${selectedConversation === conversation.id ? 'bg-blue-50' : ''}`}
-              onClick={() => setSelectedConversation(conversation.id)}
-            >
+    <div className="bg-white border rounded-lg shadow-sm h-[600px]">
+      <ResizablePanelGroup direction="horizontal" className="h-full">
+        {/* Conversation List */}
+        <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
+          <div className="h-full flex flex-col">
+            <div className="p-3 border-b">
               <div className="relative">
-                <Avatar>
-                  <AvatarImage 
-                    src={conversation.sender.avatar} 
-                    alt={conversation.sender.name} 
-                    className="object-cover"
-                  />
-                </Avatar>
-                {conversation.sender.isOnline && (
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium truncate">{conversation.sender.name}</span>
-                  <span className="text-xs text-gray-500">
-                    {formatTimestamp(conversation.messages[conversation.messages.length - 1].timestamp)}
-                  </span>
-                </div>
-                <p className={`text-sm truncate ${!conversation.messages[conversation.messages.length - 1].isRead && conversation.messages[conversation.messages.length - 1].fromUser ? 'font-semibold' : 'text-gray-500'}`}>
-                  {conversation.messages[conversation.messages.length - 1].content}
-                </p>
-              </div>
-              {!conversation.messages[conversation.messages.length - 1].isRead && conversation.messages[conversation.messages.length - 1].fromUser && (
-                <div className="w-2 h-2 rounded-full bg-blue-600"></div>
-              )}
-            </div>
-          ))}
-        </ScrollArea>
-      </div>
-
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {selectedConversation !== null ? (
-          <>
-            {/* Chat Header */}
-            <div className="p-3 border-b flex items-center gap-3">
-              <Avatar>
-                <AvatarImage 
-                  src={getCurrentConversation()?.sender.avatar} 
-                  alt={getCurrentConversation()?.sender.name} 
-                  className="object-cover"
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Cerca conversazioni..." 
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
-              </Avatar>
-              <div>
-                <p className="font-medium">{getCurrentConversation()?.sender.name}</p>
-                <p className="text-xs text-gray-500">
-                  {getCurrentConversation()?.sender.isOnline ? 'Online' : 'Offline'}
+              </div>
+            </div>
+            <ScrollArea className="flex-1">
+              {filteredConversations.map(conversation => (
+                <div 
+                  key={conversation.id} 
+                  className={`p-3 border-b flex items-center gap-3 cursor-pointer hover:bg-gray-50 ${selectedConversation === conversation.id ? 'bg-blue-50' : ''}`}
+                  onClick={() => setSelectedConversation(conversation.id)}
+                >
+                  <div className="relative">
+                    <Avatar>
+                      <AvatarImage 
+                        src={conversation.sender.avatar} 
+                        alt={conversation.sender.name} 
+                        className="object-cover"
+                      />
+                    </Avatar>
+                    {conversation.sender.isOnline && (
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium truncate">{conversation.sender.name}</span>
+                      <span className="text-xs text-gray-500">
+                        {formatTimestamp(conversation.messages[conversation.messages.length - 1].timestamp)}
+                      </span>
+                    </div>
+                    <p className={`text-sm truncate ${!conversation.messages[conversation.messages.length - 1].isRead && conversation.messages[conversation.messages.length - 1].fromUser ? 'font-semibold' : 'text-gray-500'}`}>
+                      {conversation.messages[conversation.messages.length - 1].content}
+                    </p>
+                  </div>
+                  {!conversation.messages[conversation.messages.length - 1].isRead && conversation.messages[conversation.messages.length - 1].fromUser && (
+                    <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                  )}
+                </div>
+              ))}
+            </ScrollArea>
+          </div>
+        </ResizablePanel>
+        
+        <ResizableHandle withHandle />
+        
+        {/* Chat Area */}
+        <ResizablePanel defaultSize={70}>
+          <div className="h-full flex flex-col">
+            {selectedConversation !== null ? (
+              <>
+                {/* Chat Header */}
+                <div className="p-3 border-b flex items-center gap-3">
+                  <Avatar>
+                    <AvatarImage 
+                      src={getCurrentConversation()?.sender.avatar} 
+                      alt={getCurrentConversation()?.sender.name} 
+                      className="object-cover"
+                    />
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{getCurrentConversation()?.sender.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {getCurrentConversation()?.sender.isOnline ? 'Online' : 'Offline'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Messages */}
+                <ScrollArea className="flex-1 p-4">
+                  <div className="space-y-4">
+                    {getCurrentConversation()?.messages.map(message => (
+                      <div 
+                        key={message.id} 
+                        className={`flex ${message.fromUser ? 'justify-start' : 'justify-end'}`}
+                      >
+                        <div 
+                          className={`max-w-[70%] p-3 rounded-lg ${
+                            message.fromUser 
+                              ? 'bg-gray-100 text-gray-800' 
+                              : 'bg-blue-600 text-white'
+                          }`}
+                        >
+                          <p>{message.content}</p>
+                          <p className={`text-xs mt-1 text-right ${message.fromUser ? 'text-gray-500' : 'text-blue-100'}`}>
+                            {formatTimestamp(message.timestamp)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+
+                {/* Message Input */}
+                <div className="p-3 border-t flex gap-2">
+                  <Input 
+                    placeholder="Scrivi un messaggio..." 
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleSendMessage} size="icon">
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center flex-col p-6 text-center">
+                <Mail className="h-16 w-16 text-gray-300 mb-4" />
+                <h3 className="text-xl font-medium mb-2">I tuoi messaggi</h3>
+                <p className="text-gray-500 max-w-md">
+                  Seleziona una conversazione per visualizzare i messaggi o inizia una nuova chat con i tuoi clienti.
                 </p>
               </div>
-            </div>
-
-            {/* Messages */}
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
-                {getCurrentConversation()?.messages.map(message => (
-                  <div 
-                    key={message.id} 
-                    className={`flex ${message.fromUser ? 'justify-start' : 'justify-end'}`}
-                  >
-                    <div 
-                      className={`max-w-[70%] p-3 rounded-lg ${
-                        message.fromUser 
-                          ? 'bg-gray-100 text-gray-800' 
-                          : 'bg-blue-600 text-white'
-                      }`}
-                    >
-                      <p>{message.content}</p>
-                      <p className={`text-xs mt-1 text-right ${message.fromUser ? 'text-gray-500' : 'text-blue-100'}`}>
-                        {formatTimestamp(message.timestamp)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-
-            {/* Message Input */}
-            <div className="p-3 border-t flex gap-2">
-              <Input 
-                placeholder="Scrivi un messaggio..." 
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={handleKeyPress}
-                className="flex-1"
-              />
-              <Button onClick={handleSendMessage} size="icon">
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center flex-col p-6 text-center">
-            <Mail className="h-16 w-16 text-gray-300 mb-4" />
-            <h3 className="text-xl font-medium mb-2">I tuoi messaggi</h3>
-            <p className="text-gray-500 max-w-md">
-              Seleziona una conversazione per visualizzare i messaggi o inizia una nuova chat con i tuoi clienti.
-            </p>
+            )}
           </div>
-        )}
-      </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };
