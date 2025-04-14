@@ -18,6 +18,8 @@ type LoginModalProps = {
 };
 
 const TERMS_OF_SERVICE_URL = "https://sentimentverse.com/terms-of-service";
+const PRIVACY_POLICY_URL = "https://sentimentverse.com/privacy-policy";
+const DATA_DELETION_URL = "https://sentimentverse.com/delete-user-data";
 
 const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
   const [step, setStep] = useState<'login' | 'permissions'>('login');
@@ -133,7 +135,7 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
                   >
                     Termini di Servizio
                   </a> e la nostra <a 
-                    href={TERMS_OF_SERVICE_URL} 
+                    href={PRIVACY_POLICY_URL} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="text-facebook hover:underline"
@@ -141,6 +143,16 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
                     Informativa sulla Privacy
                   </a>.
                   Non pubblicheremo nulla sul tuo profilo Facebook senza la tua autorizzazione.
+                </p>
+                <p className="mt-2">
+                  Puoi richiedere l'<a 
+                    href={DATA_DELETION_URL} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-facebook hover:underline"
+                  >
+                    eliminazione dei tuoi dati
+                  </a> in qualsiasi momento.
                 </p>
               </div>
             </>
