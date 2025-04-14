@@ -22,7 +22,7 @@ const FacebookSDK: React.FC<FacebookSDKProps> = ({ onSDKLoaded }) => {
       var js, fjs = d.getElementsByTagName(s)[0];
       if (d.getElementById(id)) return;
       js = d.createElement(s); js.id = id;
-      js.src = "https://connect.facebook.net/it_IT/sdk.js";
+      js.src = "https://connect.facebook.net/en_US/sdk.js"; // Cambiato da it_IT a en_US
       fjs.parentNode?.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
 
@@ -37,6 +37,16 @@ const FacebookSDK: React.FC<FacebookSDKProps> = ({ onSDKLoaded }) => {
       
       window.FB.AppEvents.logPageView();
       console.log('Facebook SDK initialized');
+      
+      // Check login status immediately after initialization
+      window.FB.getLoginStatus(function(response: any) {
+        console.log("Facebook login status:", response.status);
+        if (response.status !== 'connected') {
+          console.log("User is not connected to Facebook or the app");
+        } else {
+          console.log("User is connected to Facebook and authorized the app");
+        }
+      });
       
       setIsLoaded(true);
       if (onSDKLoaded) {
