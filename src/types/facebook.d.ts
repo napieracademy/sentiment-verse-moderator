@@ -19,6 +19,6 @@ interface FacebookSDK {
 }
 
 interface Window {
-  FB?: FacebookSDK;
+  FB: FacebookSDK | undefined;
   fbAsyncInit?: () => void;
 }
