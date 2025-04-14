@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const DeleteUserData: React.FC = () => {
   const { toast } = useToast();
@@ -25,42 +26,55 @@ const DeleteUserData: React.FC = () => {
       return;
     }
 
-    // Simulate processing
-    const timer = setTimeout(() => {
-      // Delete user data from localStorage
-      const fbUserData = localStorage.getItem('fbUserData');
-      
-      if (fbUserData) {
-        const userData = JSON.parse(fbUserData);
-        if (userData.id === userId) {
-          localStorage.removeItem('fbUserData');
-          localStorage.removeItem('fbAuthTimestamp');
-          // Add any other user-related data that needs to be cleared
+    const deleteUserData = async () => {
+      try {
+        // Elimina i dati dell'utente dal localStorage
+        localStorage.removeItem('fbUserData');
+        localStorage.removeItem('fbAuthTimestamp');
+        
+        // Log dell'operazione
+        console.log(`Eliminazione dati per l'utente Facebook ID: ${userId}`);
+        console.log(`Codice di conferma: ${confirmCode}`);
+        
+        // Se in futuro ci saranno dati su Supabase associati all'utente Facebook,
+        // qui potrai aggiungere il codice per eliminarli
+        // Ad esempio:
+        // await supabase
+        //   .from('user_profiles')
+        //   .delete()
+        //   .eq('facebook_user_id', userId);
+        
+        // Opzionalmente, puoi anche registrare la deautorizzazione in un log su Supabase
+        await supabase
+          .from('deauth_log')
+          .insert({
+            facebook_user_id: userId,
+            confirmation_code: confirmCode,
+            deauth_date: new Date().toISOString(),
+          })
+          .catch(err => {
+            // Se la tabella non esiste ancora, non bloccare il flusso
+            console.log('Errore nel log della deautorizzazione:', err);
+          });
           
-          setStatus("success");
-          toast({
-            title: "Eliminazione completata",
-            description: "I tuoi dati sono stati eliminati con successo.",
-          });
-        } else {
-          setStatus("error");
-          toast({
-            title: "Errore",
-            description: "ID utente non corrispondente.",
-            variant: "destructive",
-          });
-        }
-      } else {
-        // No data found for this user
         setStatus("success");
         toast({
-          title: "Nessun dato trovato",
-          description: "Non abbiamo trovato dati associati al tuo account.",
+          title: "Eliminazione completata",
+          description: "I tuoi dati sono stati eliminati con successo.",
+        });
+      } catch (error) {
+        console.error("Errore durante l'eliminazione dei dati:", error);
+        setStatus("error");
+        toast({
+          title: "Errore",
+          description: "Si è verificato un errore durante l'eliminazione dei dati.",
+          variant: "destructive",
         });
       }
-    }, 1500);
+    };
     
-    return () => clearTimeout(timer);
+    // Esegui l'eliminazione dei dati
+    deleteUserData();
   }, [toast]);
 
   const handleNavigateHome = () => {
