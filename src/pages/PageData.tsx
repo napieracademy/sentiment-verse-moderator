@@ -54,44 +54,8 @@ const PageData = () => {
       return;
     }
 
-    // Mock data for development - in a real app, you would call the Facebook API through a Supabase Edge Function
-    // to protect your app's authentication and API keys
-    const mockPages = [
-      {
-        id: "103934859335825",
-        name: "Test Page",
-        category: "Interest",
-        picture: {
-          data: {
-            url: "https://via.placeholder.com/50x50"
-          }
-        },
-        fan_count: 25,
-        followers_count: 27,
-        about: "A test page for development",
-        description: "This is a mock page for testing the Facebook integration",
-        link: "https://facebook.com",
-        location: {
-          city: "Rome",
-          country: "Italy"
-        }
-      },
-      {
-        id: "107207709008274",
-        name: "Another Test Page",
-        category: "Business",
-        picture: {
-          data: {
-            url: "https://via.placeholder.com/50x50"
-          }
-        },
-        fan_count: 42,
-        followers_count: 45
-      }
-    ];
-
-    setPages(mockPages);
-    setSelectedPage(mockPages[0]);
+    // Nessun dato mock. L'app utilizzerà solo dati reali quando si implementeranno
+    // le chiamate alle API di Facebook tramite Supabase Edge Functions
     setLoading(false);
   };
 
@@ -119,6 +83,20 @@ const PageData = () => {
             <div className="flex justify-center items-center h-64">
               <Loader2 className="h-8 w-8 animate-spin text-facebook" />
             </div>
+          ) : pages.length === 0 ? (
+            <Card>
+              <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+                <p className="text-muted-foreground mb-4">
+                  Non sono state trovate pagine associate al tuo account Facebook.
+                </p>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Una funzionalità per recuperare le tue pagine Facebook sarà implementata presto tramite Supabase Edge Functions.
+                </p>
+                <Button onClick={() => navigate('/')}>
+                  Torna alla Home
+                </Button>
+              </CardContent>
+            </Card>
           ) : (
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="lg:col-span-1">
