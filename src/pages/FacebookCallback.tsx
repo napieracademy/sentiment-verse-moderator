@@ -2,48 +2,41 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
 
 const FacebookCallback: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Parse the URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    const state = urlParams.get('state');
-
-    if (code && state) {
-      // Validate state to prevent CSRF attacks
-      const storedState = localStorage.getItem('fb_oauth_state');
-      
-      if (storedState !== state) {
-        toast({
-          title: "Errore di autenticazione",
-          description: "La richiesta non è valida. Riprova.",
-          variant: "destructive"
-        });
-        navigate('/');
-        return;
-      }
-
-      // Clear the stored state
-      localStorage.removeItem('fb_oauth_state');
-
-      // Show success toast
-      toast({
-        title: "Autenticazione riuscita",
-        description: "Accesso con Facebook completato con successo.",
-        variant: "default"
+    // Get the hash from the URL
+    const hash = window.location.hash;
+    
+    if (hash) {
+      // The hash contains the access token from Supabase OAuth
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          toast({
+            title: "Autenticazione riuscita",
+            description: "Accesso con Facebook completato con successo.",
+          });
+          
+          // Redirect to page data
+          navigate('/page-data');
+        } else {
+          toast({
+            title: "Errore di autenticazione",
+            description: "Sessione non trovata. Riprova.",
+            variant: "destructive"
+          });
+          navigate('/');
+        }
       });
-
-      // Redirect to page data page instead of selection
-      navigate('/page-data');
     } else {
-      // Handle error case
+      // No hash found, something went wrong
       toast({
         title: "Errore di autenticazione",
-        description: "Nessun codice di autorizzazione ricevuto.",
+        description: "Nessun dato di autenticazione ricevuto.",
         variant: "destructive"
       });
       navigate('/');
