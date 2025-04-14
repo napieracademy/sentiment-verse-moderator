@@ -30,17 +30,15 @@ const FacebookCallback: React.FC = () => {
       // Clear the stored state
       localStorage.removeItem('fb_oauth_state');
 
-      // TODO: Exchange the code for an access token
-      // This would typically involve a backend call to your server
-      // For now, we'll just show a success toast and redirect
+      // Show success toast
       toast({
         title: "Autenticazione riuscita",
         description: "Accesso con Facebook completato con successo.",
         variant: "default"
       });
 
-      // Redirect to page selection
-      navigate('/select-page');
+      // Redirect to page data page instead of selection
+      navigate('/page-data');
     } else {
       // Handle error case
       toast({

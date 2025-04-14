@@ -10,7 +10,8 @@ import SelectPage from "./pages/SelectPage";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import FacebookCallback from "./pages/FacebookCallback";
-import DeleteUserData from "./pages/DeleteUserData"; // New import
+import DeleteUserData from "./pages/DeleteUserData"; 
+import PageData from "./pages/PageData"; // New import
 
 const queryClient = new QueryClient();
 
@@ -22,9 +23,10 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/select-page" element={<SelectPage />} />
+          <Route path="/page-data" element={<PageData />} /> {/* New route for Page Data */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/auth/facebook/callback" element={<FacebookCallback />} />
-          <Route path="/delete-user-data" element={<DeleteUserData />} /> {/* New route for data deletion */}
+          <Route path="/delete-user-data" element={<DeleteUserData />} /> 
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
