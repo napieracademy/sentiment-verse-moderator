@@ -11,6 +11,10 @@ import NotFound from "./pages/NotFound";
 import FacebookCallback from "./pages/FacebookCallback";
 import PageData from "./pages/PageData";
 import FacebookData from "./pages/FacebookData";
+import DeleteUserData from "./pages/DeleteUserData";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import CookiePolicy from "./pages/CookiePolicy";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +29,10 @@ const App = () => (
           <Route path="/facebook-data" element={<FacebookData />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/auth/facebook/callback" element={<FacebookCallback />} />
+          <Route path="/delete-user-data" element={<DeleteUserData />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
