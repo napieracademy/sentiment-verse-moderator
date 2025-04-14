@@ -1,8 +1,6 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import LoginModal from "@/components/LoginModal";
-import FacebookSDK from "@/components/FacebookSDK";
 import { Facebook } from "lucide-react";
 
 const Index = () => {
@@ -15,9 +13,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Add Facebook SDK component */}
-      <FacebookSDK />
-
       {/* Header */}
       <header className="border-b py-4 px-6">
         <div className="container flex justify-between items-center">

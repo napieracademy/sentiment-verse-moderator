@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,9 +21,35 @@ type LoginModalProps = {
 const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
   const [step, setStep] = useState<'login' | 'permissions'>('login');
   const [loading, setLoading] = useState(false);
-  const [userData, setUserData] = useState<{name?: string, id?: string} | null>(null);
+  const [userData, setUserData] = useState<{name?: string, id?: string, accessToken?: string} | null>(null);
+  const [sdkLoaded, setSdkLoaded] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Check if we're coming back from a redirect with an access token
+  useEffect(() => {
+    if (window.FB && open) {
+      window.FB.getLoginStatus(function(response: any) {
+        if (response.status === 'connected') {
+          // User is logged in and has authenticated the app
+          fetchUserData(response.authResponse);
+        }
+      });
+    }
+  }, [open, sdkLoaded]);
+
+  const fetchUserData = (authResponse: any) => {
+    window.FB.api('/me', function(response: any) {
+      console.log('User data retrieved:', response);
+      setUserData({
+        name: response.name,
+        id: response.id,
+        accessToken: authResponse?.accessToken
+      });
+      setStep('permissions');
+      setLoading(false);
+    });
+  };
 
   const handleFacebookLogin = () => {
     setLoading(true);
@@ -31,7 +57,7 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
     if (!window.FB) {
       toast({
         title: "Errore",
-        description: "SDK di Facebook non caricato correttamente",
+        description: "SDK di Facebook non caricato correttamente. Ricarica la pagina.",
         variant: "destructive"
       });
       setLoading(false);
@@ -41,15 +67,7 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
     window.FB.login(function(response: any) {
       if (response.authResponse) {
         console.log('Welcome! Fetching your information....');
-        window.FB.api('/me', function(response: any) {
-          console.log('Good to see you, ' + response.name + '.');
-          setUserData({
-            name: response.name,
-            id: response.id
-          });
-          setStep('permissions');
-          setLoading(false);
-        });
+        fetchUserData(response.authResponse);
       } else {
         console.log('User cancelled login or did not fully authorize.');
         toast({
@@ -59,10 +77,16 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
         });
         setLoading(false);
       }
-    }, {scope: 'public_profile,pages_show_list,pages_read_engagement,pages_read_user_content'});
+    }, {scope: 'public_profile,pages_show_list,pages_read_engagement,pages_read_user_content', auth_type: 'rerequest'});
   };
 
   const handlePermissionGrant = () => {
+    // Store authentication data in localStorage for persistence between page visits
+    if (userData) {
+      localStorage.setItem('fbUserData', JSON.stringify(userData));
+      localStorage.setItem('fbAuthTimestamp', new Date().toISOString());
+    }
+    
     onOpenChange(false);
     navigate('/select-page');
   };

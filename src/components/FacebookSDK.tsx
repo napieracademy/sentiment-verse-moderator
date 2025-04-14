@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 // Create type definitions for the Facebook SDK
 declare global {
@@ -9,7 +9,13 @@ declare global {
   }
 }
 
-const FacebookSDK: React.FC = () => {
+interface FacebookSDKProps {
+  onSDKLoaded?: () => void;
+}
+
+const FacebookSDK: React.FC<FacebookSDKProps> = ({ onSDKLoaded }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
   useEffect(() => {
     // Load the SDK asynchronously
     (function(d, s, id) {
@@ -31,8 +37,13 @@ const FacebookSDK: React.FC = () => {
       
       window.FB.AppEvents.logPageView();
       console.log('Facebook SDK initialized');
+      
+      setIsLoaded(true);
+      if (onSDKLoaded) {
+        onSDKLoaded();
+      }
     };
-  }, []);
+  }, [onSDKLoaded]);
 
   return null; // This component doesn't render anything
 };
