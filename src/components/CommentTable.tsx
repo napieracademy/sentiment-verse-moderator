@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,6 +68,17 @@ type FacebookPost = {
   };
 };
 
+// Facebook API response type
+interface FacebookApiResponse<T> {
+  data: T[];
+  error?: {
+    message: string;
+    type: string;
+    code: number;
+    fbtrace_id: string;
+  };
+}
+
 // Our processed comment type
 type Comment = {
   id: string;
@@ -128,8 +138,8 @@ const CommentTable = () => {
             access_token: pageAccessToken,
             limit: 10
           },
-          (postsResponse: { data: FacebookPost[] }) => {
-            if (postsResponse && !postsResponse.error) {
+          (postsResponse: FacebookApiResponse<FacebookPost>) => {
+            if (postsResponse && !postsResponse.error && postsResponse.data) {
               const fetchedPosts = postsResponse.data
                 .filter(post => post.message) // Only include posts with messages
                 .map(post => ({
@@ -155,7 +165,7 @@ const CommentTable = () => {
                       access_token: pageAccessToken,
                       limit: 25
                     },
-                    (commentsResponse: { data: FacebookComment[] }) => {
+                    (commentsResponse: FacebookApiResponse<FacebookComment>) => {
                       if (commentsResponse && !commentsResponse.error && commentsResponse.data) {
                         const postComments = commentsResponse.data.map(comment => ({
                           id: comment.id,
@@ -192,7 +202,9 @@ const CommentTable = () => {
             } else {
               toast({
                 title: "Errore",
-                description: "Impossibile recuperare i post della pagina",
+                description: postsResponse.error ? 
+                  `Impossibile recuperare i post della pagina: ${postsResponse.error.message}` :
+                  "Impossibile recuperare i post della pagina",
                 variant: "destructive"
               });
               setLoading(false);
@@ -336,7 +348,7 @@ const CommentTable = () => {
             access_token: pageAccessToken,
             limit: 10
           },
-          (postsResponse: { data: FacebookPost[] }) => {
+          (postsResponse: FacebookApiResponse<FacebookPost>) => {
             if (postsResponse && !postsResponse.error) {
               const fetchedPosts = postsResponse.data
                 .filter(post => post.message) // Only include posts with messages
@@ -363,7 +375,7 @@ const CommentTable = () => {
                       access_token: pageAccessToken,
                       limit: 25
                     },
-                    (commentsResponse: { data: FacebookComment[] }) => {
+                    (commentsResponse: FacebookApiResponse<FacebookComment>) => {
                       if (commentsResponse && !commentsResponse.error && commentsResponse.data) {
                         const postComments = commentsResponse.data.map(comment => ({
                           id: comment.id,
