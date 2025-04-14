@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import FacebookCallback from "./pages/FacebookCallback";
 import PageData from "./pages/PageData";
+import FacebookData from "./pages/FacebookData";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/page-data" element={<PageData />} />
+          <Route path="/facebook-data" element={<FacebookData />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/auth/facebook/callback" element={<FacebookCallback />} />
           <Route path="*" element={<NotFound />} />
