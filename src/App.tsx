@@ -15,6 +15,8 @@ import DeleteUserData from "./pages/DeleteUserData";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
+import Deauthorize from "./pages/facebook/Deauthorize";
+import DeletionStatus from "./pages/facebook/DeletionStatus";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,8 @@ const App = () => (
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
+          <Route path="/facebook/deauthorize" element={<Deauthorize />} />
+          <Route path="/deletion_status" element={<DeletionStatus />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />

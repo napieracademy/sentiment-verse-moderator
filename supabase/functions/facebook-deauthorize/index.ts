@@ -83,8 +83,8 @@ serve(async (req) => {
     // Genera un codice di conferma
     const confirmationCode = `del_${userId}_${Date.now()}`;
     
-    // URL di stato della cancellazione (dovresti creare questa pagina nella tua app)
-    const deletionStatusUrl = `https://sentimentverse.com/delete-user-data?user_id=${userId}&confirm_code=${confirmationCode}`;
+    // URL di stato della cancellazione
+    const deletionStatusUrl = `https://sentimentverse.com/deletion_status?user_id=${userId}&confirm_code=${confirmationCode}`;
 
     // Risposta nel formato richiesto da Facebook
     const responseData = {
