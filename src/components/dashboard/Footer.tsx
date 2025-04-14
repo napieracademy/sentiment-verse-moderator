@@ -1,4 +1,6 @@
 
+import { Link } from 'react-router-dom';
+
 const Footer = () => {
   return (
     <footer className="py-3 bg-white border-t">
@@ -8,21 +10,21 @@ const Footer = () => {
             © 2025 SentimentVerse. Questa è una demo.
           </div>
           <div className="flex flex-wrap justify-center gap-4 text-sm">
-            <a href="/privacy-policy" className="text-gray-600 hover:underline">
+            <Link to="/" className="text-facebook hover:underline">
+              Home
+            </Link>
+            <Link to="/privacy-policy" className="text-gray-600 hover:underline">
               Privacy Policy
-            </a>
-            <a href="/terms-of-service" className="text-gray-600 hover:underline">
+            </Link>
+            <Link to="/terms-of-service" className="text-gray-600 hover:underline">
               Termini di Servizio
-            </a>
-            <a href="/cookie-policy" className="text-gray-600 hover:underline">
+            </Link>
+            <Link to="/cookie-policy" className="text-gray-600 hover:underline">
               Cookie Policy
-            </a>
-            <a href="/delete-user-data" className="text-gray-600 hover:underline">
+            </Link>
+            <Link to="/delete-user-data" className="text-gray-600 hover:underline">
               Cancellazione Dati
-            </a>
-            <a href="/" className="text-facebook hover:underline">
-              Torna alla Home
-            </a>
+            </Link>
           </div>
         </div>
       </div>

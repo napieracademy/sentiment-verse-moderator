@@ -107,7 +107,7 @@ const PageSelectionModal = ({
           localStorage.setItem("selectedPage", JSON.stringify(response));
           localStorage.setItem("pageAccessToken", selectedPage.access_token);
           onOpenChange(false);
-          navigate('/dashboard');
+          navigate('/facebook-data');
         } else {
           toast({
             title: "Errore",

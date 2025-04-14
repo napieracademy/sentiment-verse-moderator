@@ -68,7 +68,7 @@ const PageOverview = () => {
   }, [toast]);
 
   const handleChangePage = () => {
-    navigate("/page-data");
+    navigate("/facebook-data");
   };
 
   if (loading) {
