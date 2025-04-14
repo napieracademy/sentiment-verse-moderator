@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 // Create type definitions for the Facebook SDK
 declare global {
@@ -22,14 +23,14 @@ const FacebookSDK: React.FC<FacebookSDKProps> = ({ onSDKLoaded }) => {
       var js, fjs = d.getElementsByTagName(s)[0];
       if (d.getElementById(id)) return;
       js = d.createElement(s); js.id = id;
-      js.src = "https://connect.facebook.net/en_US/sdk.js"; // Cambiato da it_IT a en_US
+      js.src = "https://connect.facebook.net/en_US/sdk.js";
       fjs.parentNode?.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
 
     // Initialize the SDK once it's loaded
     window.fbAsyncInit = function() {
       window.FB.init({
-        appId: '1244095920468498', // Keep the existing App ID
+        appId: '1244095920468498',
         cookie: true,
         xfbml: true,
         version: 'v18.0'
@@ -37,16 +38,6 @@ const FacebookSDK: React.FC<FacebookSDKProps> = ({ onSDKLoaded }) => {
       
       window.FB.AppEvents.logPageView();
       console.log('Facebook SDK initialized');
-      
-      // Check login status immediately after initialization
-      window.FB.getLoginStatus(function(response: any) {
-        console.log("Facebook login status:", response.status);
-        if (response.status !== 'connected') {
-          console.log("User is not connected to Facebook or the app");
-        } else {
-          console.log("User is connected to Facebook and authorized the app");
-        }
-      });
       
       setIsLoaded(true);
       if (onSDKLoaded) {
@@ -57,6 +48,20 @@ const FacebookSDK: React.FC<FacebookSDKProps> = ({ onSDKLoaded }) => {
       document.dispatchEvent(new Event('fb-sdk-loaded'));
     };
   }, [onSDKLoaded]);
+
+  // Add Supabase Facebook login method
+  const handleFacebookLogin = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'facebook',
+      options: {
+        scopes: 'public_profile,pages_show_list,pages_read_engagement,pages_read_user_content'
+      }
+    });
+
+    if (error) {
+      console.error('Error logging in with Facebook:', error);
+    }
+  };
 
   return null; // This component doesn't render anything
 };
