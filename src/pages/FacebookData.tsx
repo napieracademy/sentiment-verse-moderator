@@ -160,7 +160,7 @@ const FacebookData = () => {
   // Mappa di token specifici per pagina
   const pageTokens: Record<string, string> = {
     "121428567930871": "EAARrf6dn8hIBO0ncV0G3zZCy6Pk1bBXZCot0KhDFVcHvba6OguZANMYlJp3ozq7h5nTAF2o2h1H3lyftV7fc0Cy2NmvmBJowmXrVPU627ykxqz7aGxbyVZBq7fUimHdWOddcLCZAQ1kzSMSEEQMqHS3wDZBU4FqmCqLpls7C5TFB55tqMZBXey0PhtThrkN1mqCQthAJSyjshd2GqIZD", // Te la do io Firenze
-    "111619452357834": "EAARrf6dn8hIBO5dyhRlxhnQ1Egjfy5OGn93DIdxdBtYrVD48Bsr10ieq2LK8FRZAVCjhFAixHcFip8rwO0PnSA3KZBRnfxAi44P3SydTaE0EabsvaK2iZAI2ZCvGlk2z9C5YaxYx8AjO98jjjj6hoFV4gq7mo8PHqZBbRUEvVsp6G3nVkdfZBelrCIz7hVhZACg0F1ZBp1IafCLUxzZBTwjQ2qSkhpObllSGfiam4rq0ZD"  // Metro - The Game
+    "111619452357834": "EAARrf6dn8hIBO0ncV0G3zZCy6Pk1bBXZCot0KhDFVcHvba6OguZANMYlJp3ozq7h5nTAF2o2h1H3lyftV7fc0Cy2NmvmBJowmXrVPU627ykxqz7aGxbyVZBq7fUimHdWOddcLCZAQ1kzSMSEEQMqHS3wDZBU4FqmCqLpls7C5TFB55tqMZBXey0PhtThrkN1mqCQthAJSyjshd2GqIZD"  // Metro - The Game (aggiornato con token funzionante)
   };
   
   // Informazioni statiche delle pagine
