@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/hooks/use-toast";
 
 // Token fornito dall'utente
-const CUSTOM_FACEBOOK_TOKEN = "EAARrf6dn8hIBO4zrhcuxBgz8dHWfMasFULWaZAPINE6ZASia9dlFu2o4RuFHiae0SCqnG0yZB5j7hZAfYloXRRjuvVPIZAbTJ6e2kzHgwYTKoOteEaYUAl7909uOckBOGeEkxRdcWqcqz9yXd2gS0KOwauEmkxd5hbQR7GmG8InxVIIkzUuR9WplcMrwAzhm5PgTZAnX7DorZAItbQZD";
+const CUSTOM_FACEBOOK_TOKEN = "EAARrf6dn8hIBO3VpaegCmhrCv4f3MVNq70aKE7m1UnYxCFfRZBWV0U7GOdVbkiSFyqn4jo5OUCQFoGQSzmgV7r2bZAqZAct6E9p4pS8tkWSXuUUE8SdoZBeZAGpIG8hLLUsMJ82TrvMEfSTxLIZB7RRKdevqQ9Rac4cahALQ11JkqxNaETAnGLZBH4zXqoDKiXQAxdVzEt1v5eXtja9QD6MMXf4DkePCUICrM9XBeih";
 
 export const fetchFacebookPages = async () => {
   try {

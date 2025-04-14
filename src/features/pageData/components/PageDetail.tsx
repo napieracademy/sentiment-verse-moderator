@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
 import { FacebookPage } from "../types";
+import { PostsTable } from "./PostsTable";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PageDetailProps {
   selectedPage: FacebookPage | null;
@@ -64,49 +66,62 @@ export const PageDetail = ({ selectedPage, onGoToDashboard }: PageDetailProps) =
             )}
           </div>
         </div>
-        
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[200px]">Proprietà</TableHead>
-              <TableHead>Valore</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell className="font-medium">ID</TableCell>
-              <TableCell>{selectedPage.id}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="font-medium">Fan count</TableCell>
-              <TableCell>{selectedPage.fan_count?.toLocaleString('it-IT') || 'N/A'}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="font-medium">Follower count</TableCell>
-              <TableCell>{selectedPage.followers_count?.toLocaleString('it-IT') || 'N/A'}</TableCell>
-            </TableRow>
-            {selectedPage.about && (
-              <TableRow>
-                <TableCell className="font-medium">About</TableCell>
-                <TableCell>{selectedPage.about}</TableCell>
-              </TableRow>
-            )}
-            {selectedPage.description && (
-              <TableRow>
-                <TableCell className="font-medium">Descrizione</TableCell>
-                <TableCell>{selectedPage.description}</TableCell>
-              </TableRow>
-            )}
-            {selectedPage.location && (
-              <TableRow>
-                <TableCell className="font-medium">Località</TableCell>
-                <TableCell>
-                  {selectedPage.location.city}, {selectedPage.location.country}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+
+        <Tabs defaultValue="info" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="info">Informazioni</TabsTrigger>
+            <TabsTrigger value="posts">Post</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="info">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[200px]">Proprietà</TableHead>
+                  <TableHead>Valore</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium">ID</TableCell>
+                  <TableCell>{selectedPage.id}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Fan count</TableCell>
+                  <TableCell>{selectedPage.fan_count?.toLocaleString('it-IT') || 'N/A'}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Follower count</TableCell>
+                  <TableCell>{selectedPage.followers_count?.toLocaleString('it-IT') || 'N/A'}</TableCell>
+                </TableRow>
+                {selectedPage.about && (
+                  <TableRow>
+                    <TableCell className="font-medium">About</TableCell>
+                    <TableCell>{selectedPage.about}</TableCell>
+                  </TableRow>
+                )}
+                {selectedPage.description && (
+                  <TableRow>
+                    <TableCell className="font-medium">Descrizione</TableCell>
+                    <TableCell>{selectedPage.description}</TableCell>
+                  </TableRow>
+                )}
+                {selectedPage.location && (
+                  <TableRow>
+                    <TableCell className="font-medium">Località</TableCell>
+                    <TableCell>
+                      {selectedPage.location.city}, {selectedPage.location.country}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TabsContent>
+          
+          <TabsContent value="posts">
+            <PostsTable pageId={selectedPage.id} accessToken={selectedPage.access_token} />
+          </TabsContent>
+        </Tabs>
         
         <div className="mt-6">
           <Button onClick={onGoToDashboard}>
