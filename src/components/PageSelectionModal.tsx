@@ -1,20 +1,30 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { mockPages } from "@/lib/mockData";
 import { useNavigate } from "react-router-dom";
 
-type PageSelectionModalProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+// Remove mock pages import
+type Page = {
+  id: string;
+  name: string;
+  category: string;
+  profilePic: string;
+  followers: number;
 };
 
 const PageSelectionModal = ({
   open,
   onOpenChange
-}: PageSelectionModalProps) => {
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => {
   const navigate = useNavigate();
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
+  
+  // TODO: Replace with real Facebook page fetching
+  const pages: Page[] = [];
   
   const handleSelectPage = () => {
     if (!selectedPageId) return;
@@ -34,9 +44,18 @@ const PageSelectionModal = ({
         </DialogHeader>
         
         <div className="flex flex-col space-y-2 py-4 max-h-[300px] overflow-y-auto">
-          {mockPages.map(page => <div key={page.id} className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200 
-                ${selectedPageId === page.id ? "bg-neutral-100 border border-neutral-300" : "hover:bg-neutral-50"}`} onClick={() => setSelectedPageId(page.id)}>
-              <img src={page.profilePic} alt={page.name} className="h-12 w-12 rounded-md object-cover grayscale-[50%]" />
+          {pages.map(page => (
+            <div 
+              key={page.id} 
+              className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200 
+                ${selectedPageId === page.id ? "bg-neutral-100 border border-neutral-300" : "hover:bg-neutral-50"}`} 
+              onClick={() => setSelectedPageId(page.id)}
+            >
+              <img 
+                src={page.profilePic} 
+                alt={page.name} 
+                className="h-12 w-12 rounded-md object-cover grayscale-[50%]" 
+              />
               <div className="flex-1">
                 <h4 className="font-medium text-neutral-800">{page.name}</h4>
                 <p className="text-sm text-neutral-500">
@@ -48,7 +67,8 @@ const PageSelectionModal = ({
                     <path d="M20 6L9 17l-5-5" />
                   </svg>}
               </div>
-            </div>)}
+            </div>
+          ))}
         </div>
         
         <DialogFooter className="flex sm:flex-row sm:justify-end sm:space-x-2 pt-4 border-t border-neutral-100">

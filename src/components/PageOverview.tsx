@@ -26,7 +26,8 @@ const PageOverview = () => {
   const [page, setPage] = useState<FacebookPage | null>(null);
 
   useEffect(() => {
-    // Try to get the page from localStorage
+    // Fetch real Facebook page data
+    // TODO: Implement Facebook API integration to fetch page details
     const storedPage = localStorage.getItem("selectedPage");
     if (storedPage) {
       try {
@@ -62,10 +63,7 @@ const PageOverview = () => {
     );
   }
 
-  // Get the profile picture URL from the correct property
   const profilePicUrl = page.picture?.data?.url || page.profilePic;
-  
-  // Get followers count from the correct property
   const followersCount = page.followers_count || page.followers || page.fan_count || 0;
 
   return (

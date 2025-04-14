@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { mockComments, Comment, Sentiment } from "@/lib/mockData";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -23,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -32,9 +31,23 @@ import {
   ChevronDown, ChevronUp, User, Store, Book
 } from "lucide-react";
 import { format } from "date-fns";
-import { getSentimentColor } from "@/lib/mockData";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Define types locally since mockData.ts is removed
+type Sentiment = 'positive' | 'negative' | 'neutral';
+
+type Comment = {
+  id: string;
+  postId: string;
+  authorName: string;
+  authorProfilePic: string;
+  content: string;
+  timestamp: string;
+  sentiment: Sentiment;
+  hidden: boolean;
+  isPage?: boolean;
+};
 
 type Post = {
   id: string;
@@ -85,6 +98,109 @@ const mockPosts: Post[] = [
     authorProfilePic: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&auto=format&fit=crop&q=60",
     timestamp: "2025-04-07T11:45:00Z", 
     isPage: true
+  }
+];
+
+const mockComments: Comment[] = [
+  {
+    id: 'comment1',
+    postId: 'post1',
+    authorName: 'Marco Rossi',
+    authorProfilePic: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&auto=format&fit=crop&q=60',
+    content: 'Il caffè qui è fantastico! Il migliore della città!',
+    timestamp: '2025-04-11T14:23:00Z',
+    sentiment: 'positive',
+    hidden: false,
+  },
+  {
+    id: 'comment2',
+    postId: 'post1',
+    authorName: 'Giulia Bianchi',
+    authorProfilePic: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=800&auto=format&fit=crop&q=60',
+    content: 'Servizio lento e personale scortese. Non tornerò.',
+    timestamp: '2025-04-11T16:45:00Z',
+    sentiment: 'negative',
+    hidden: false,
+  },
+  {
+    id: 'comment3',
+    postId: 'post2',
+    authorName: 'Luca Verdi',
+    authorProfilePic: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&auto=format&fit=crop&q=60',
+    content: 'Ho provato il nuovo menu. Il cappuccino era buono ma un po\' caro.',
+    timestamp: '2025-04-10T09:30:00Z',
+    sentiment: 'neutral',
+    hidden: false,
+  },
+  {
+    id: 'comment4',
+    postId: 'post2',
+    authorName: 'Sophia Conti',
+    authorProfilePic: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop&q=60',
+    content: 'Questo posto è incredibile! Caffè eccellente e atmosfera fantastica.',
+    timestamp: '2025-04-10T11:15:00Z',
+    sentiment: 'positive',
+    hidden: false,
+  },
+  {
+    id: 'comment5',
+    postId: 'post3',
+    authorName: 'Alessandro Romano',
+    authorProfilePic: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=800&auto=format&fit=crop&q=60',
+    content: 'Mi dispiace, ma l\'espresso di oggi era troppo amaro e freddo.',
+    timestamp: '2025-04-09T15:40:00Z',
+    sentiment: 'negative',
+    hidden: false,
+  },
+  {
+    id: 'comment6',
+    postId: 'post3',
+    authorName: 'Elena Ferrari',
+    authorProfilePic: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=60',
+    content: 'Sono passata oggi per un caffè veloce. Tutto nella norma.',
+    timestamp: '2025-04-09T16:20:00Z',
+    sentiment: 'neutral',
+    hidden: false,
+  },
+  {
+    id: 'comment7',
+    postId: 'post4',
+    authorName: 'Roberto Marino',
+    authorProfilePic: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&auto=format&fit=crop&q=60',
+    content: 'I dolci qui sono straordinari! Tornerò sicuramente per provare altro!',
+    timestamp: '2025-04-08T10:05:00Z',
+    sentiment: 'positive',
+    hidden: false,
+  },
+  {
+    id: 'comment8',
+    postId: 'post4',
+    authorName: 'Francesca Rizzo',
+    authorProfilePic: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=60', 
+    content: 'Il caffè era decente ma il personale sembrava stressato.',
+    timestamp: '2025-04-08T14:50:00Z',
+    sentiment: 'neutral',
+    hidden: false,
+  },
+  {
+    id: 'comment9',
+    postId: 'post5',
+    authorName: 'Giovanni Russo',
+    authorProfilePic: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=800&auto=format&fit=crop&q=60',
+    content: 'Pessima esperienza. Il caffè era freddo e il cameriere maleducato.',
+    timestamp: '2025-04-07T13:25:00Z',
+    sentiment: 'negative',
+    hidden: false,
+  },
+  {
+    id: 'comment10',
+    postId: 'post5',
+    authorName: 'Anna Esposito',
+    authorProfilePic: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=800&auto=format&fit=crop&q=60',
+    content: 'Adoro questo posto! Il caffè migliore e lo staff più gentile!',
+    timestamp: '2025-04-07T17:10:00Z',
+    sentiment: 'positive',
+    hidden: false,
   }
 ];
 
@@ -232,6 +348,19 @@ const CommentTable = () => {
 
   const getPostById = (postId: string) => {
     return mockPosts.find(post => post.id === postId);
+  };
+
+  const getSentimentColor = (sentiment: Sentiment) => {
+    switch (sentiment) {
+      case 'positive':
+        return 'text-positive';
+      case 'negative':
+        return 'text-negative';
+      case 'neutral':
+        return 'text-neutral';
+      default:
+        return '';
+    }
   };
 
   const renderCommentsView = () => {
