@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -28,15 +29,47 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Eye, EyeOff, ThumbsDown, ThumbsUp, 
   Trash2, MessageSquare, Tag, Filter,
-  ChevronDown, ChevronUp, User, Store, Book
+  ChevronDown, ChevronUp, User, Store, Book,
+  Loader2, RefreshCw
 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Define types locally since mockData.ts is removed
+// Define types for Facebook data
 type Sentiment = 'positive' | 'negative' | 'neutral';
 
+type FacebookComment = {
+  id: string;
+  message: string;
+  created_time: string;
+  from: {
+    id: string;
+    name: string;
+    picture?: {
+      data: {
+        url: string;
+      }
+    };
+  };
+};
+
+type FacebookPost = {
+  id: string;
+  message: string;
+  created_time: string;
+  from: {
+    id: string;
+    name: string;
+    picture?: {
+      data: {
+        url: string;
+      }
+    };
+  };
+};
+
+// Our processed comment type
 type Comment = {
   id: string;
   postId: string;
@@ -49,6 +82,7 @@ type Comment = {
   isPage?: boolean;
 };
 
+// Our processed post type
 type Post = {
   id: string;
   content: string;
@@ -58,203 +92,178 @@ type Post = {
   isPage: boolean;
 };
 
-const mockPosts: Post[] = [
-  {
-    id: "post1",
-    content: "Oggi offerta speciale sul nostro nuovo caffè! Venite a trovarci!",
-    authorName: "Caffè Napoletano",
-    authorProfilePic: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&auto=format&fit=crop&q=60",
-    timestamp: "2025-04-11T10:00:00Z",
-    isPage: true
-  },
-  {
-    id: "post2",
-    content: "È arrivata la nostra nuova miscela premium. Da provare!",
-    authorName: "Caffè Napoletano",
-    authorProfilePic: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&auto=format&fit=crop&q=60",
-    timestamp: "2025-04-10T09:00:00Z",
-    isPage: true
-  },
-  {
-    id: "post3",
-    content: "Come vi sembrano i nostri nuovi bicchieri eco-friendly?",
-    authorName: "Caffè Napoletano",
-    authorProfilePic: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&auto=format&fit=crop&q=60",
-    timestamp: "2025-04-09T14:30:00Z",
-    isPage: true
-  },
-  {
-    id: "post4",
-    content: "Novità in arrivo la prossima settimana. Restate sintonizzati!",
-    authorName: "Caffè Napoletano",
-    authorProfilePic: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&auto=format&fit=crop&q=60",
-    timestamp: "2025-04-08T08:15:00Z",
-    isPage: true
-  },
-  {
-    id: "post5",
-    content: "Grazie a tutti per essere venuti all'evento di ieri!",
-    authorName: "Caffè Napoletano",
-    authorProfilePic: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&auto=format&fit=crop&q=60",
-    timestamp: "2025-04-07T11:45:00Z", 
-    isPage: true
-  }
-];
-
-const mockComments: Comment[] = [
-  {
-    id: 'comment1',
-    postId: 'post1',
-    authorName: 'Marco Rossi',
-    authorProfilePic: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&auto=format&fit=crop&q=60',
-    content: 'Il caffè qui è fantastico! Il migliore della città!',
-    timestamp: '2025-04-11T14:23:00Z',
-    sentiment: 'positive',
-    hidden: false,
-  },
-  {
-    id: 'comment2',
-    postId: 'post1',
-    authorName: 'Giulia Bianchi',
-    authorProfilePic: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=800&auto=format&fit=crop&q=60',
-    content: 'Servizio lento e personale scortese. Non tornerò.',
-    timestamp: '2025-04-11T16:45:00Z',
-    sentiment: 'negative',
-    hidden: false,
-  },
-  {
-    id: 'comment3',
-    postId: 'post2',
-    authorName: 'Luca Verdi',
-    authorProfilePic: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&auto=format&fit=crop&q=60',
-    content: 'Ho provato il nuovo menu. Il cappuccino era buono ma un po\' caro.',
-    timestamp: '2025-04-10T09:30:00Z',
-    sentiment: 'neutral',
-    hidden: false,
-  },
-  {
-    id: 'comment4',
-    postId: 'post2',
-    authorName: 'Sophia Conti',
-    authorProfilePic: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop&q=60',
-    content: 'Questo posto è incredibile! Caffè eccellente e atmosfera fantastica.',
-    timestamp: '2025-04-10T11:15:00Z',
-    sentiment: 'positive',
-    hidden: false,
-  },
-  {
-    id: 'comment5',
-    postId: 'post3',
-    authorName: 'Alessandro Romano',
-    authorProfilePic: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=800&auto=format&fit=crop&q=60',
-    content: 'Mi dispiace, ma l\'espresso di oggi era troppo amaro e freddo.',
-    timestamp: '2025-04-09T15:40:00Z',
-    sentiment: 'negative',
-    hidden: false,
-  },
-  {
-    id: 'comment6',
-    postId: 'post3',
-    authorName: 'Elena Ferrari',
-    authorProfilePic: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=60',
-    content: 'Sono passata oggi per un caffè veloce. Tutto nella norma.',
-    timestamp: '2025-04-09T16:20:00Z',
-    sentiment: 'neutral',
-    hidden: false,
-  },
-  {
-    id: 'comment7',
-    postId: 'post4',
-    authorName: 'Roberto Marino',
-    authorProfilePic: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&auto=format&fit=crop&q=60',
-    content: 'I dolci qui sono straordinari! Tornerò sicuramente per provare altro!',
-    timestamp: '2025-04-08T10:05:00Z',
-    sentiment: 'positive',
-    hidden: false,
-  },
-  {
-    id: 'comment8',
-    postId: 'post4',
-    authorName: 'Francesca Rizzo',
-    authorProfilePic: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=60', 
-    content: 'Il caffè era decente ma il personale sembrava stressato.',
-    timestamp: '2025-04-08T14:50:00Z',
-    sentiment: 'neutral',
-    hidden: false,
-  },
-  {
-    id: 'comment9',
-    postId: 'post5',
-    authorName: 'Giovanni Russo',
-    authorProfilePic: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=800&auto=format&fit=crop&q=60',
-    content: 'Pessima esperienza. Il caffè era freddo e il cameriere maleducato.',
-    timestamp: '2025-04-07T13:25:00Z',
-    sentiment: 'negative',
-    hidden: false,
-  },
-  {
-    id: 'comment10',
-    postId: 'post5',
-    authorName: 'Anna Esposito',
-    authorProfilePic: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=800&auto=format&fit=crop&q=60',
-    content: 'Adoro questo posto! Il caffè migliore e lo staff più gentile!',
-    timestamp: '2025-04-07T17:10:00Z',
-    sentiment: 'positive',
-    hidden: false,
-  }
-];
-
-const mockMentions = [
-  {
-    id: "mention1",
-    postId: "external1",
-    postContent: "Ho appena provato il caffè da @Caffè Napoletano ed è fantastico!",
-    authorName: "Maria Verdi",
-    authorProfilePic: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=60",
-    authorType: "user",
-    timestamp: "2025-04-12T13:20:00Z",
-    sentiment: "positive" as Sentiment
-  },
-  {
-    id: "mention2",
-    postId: "external2",
-    postContent: "Evento speciale oggi pomeriggio con @Caffè Napoletano. Vi aspettiamo!",
-    authorName: "Eventi Milano",
-    authorProfilePic: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&auto=format&fit=crop&q=60",
-    authorType: "page",
-    timestamp: "2025-04-11T09:45:00Z",
-    sentiment: "neutral" as Sentiment
-  },
-  {
-    id: "mention3",
-    postId: "external3",
-    postContent: "Recensione del nuovo locale di @Caffè Napoletano. Leggi l'articolo completo sul nostro sito.",
-    authorName: "Food Blog Italia",
-    authorProfilePic: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&auto=format&fit=crop&q=60",
-    authorType: "page",
-    timestamp: "2025-04-10T16:30:00Z",
-    sentiment: "positive" as Sentiment
-  }
-];
-
-const enhancedComments = mockComments.map(comment => ({
-  ...comment,
-  isPage: comment.id === "comment2" || comment.id === "comment5" || comment.id === "comment9",
-}));
-
 const CommentTable = () => {
   const { toast } = useToast();
-  const [comments, setComments] = useState(enhancedComments);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [filter, setFilter] = useState<Sentiment | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [contentType, setContentType] = useState<"comments" | "mentions" | "ratings">("comments");
-  const [expandedPosts, setExpandedPosts] = useState<Record<string, boolean>>({
-    post1: true,
-    post2: false,
-    post3: false,
-    post4: false,
-    post5: false,
-  });
+  const [expandedPosts, setExpandedPosts] = useState<Record<string, boolean>>({});
+  const [loading, setLoading] = useState(true);
+  const [mentions, setMentions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      
+      const pageData = localStorage.getItem("selectedPage");
+      const pageAccessToken = localStorage.getItem("pageAccessToken");
+      
+      if (!pageData || !pageAccessToken || typeof window.FB === 'undefined') {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        const page = JSON.parse(pageData);
+        const pageId = page.id;
+        
+        // Fetch posts from the page
+        window.FB.api(
+          `/${pageId}/posts`,
+          'GET',
+          {
+            fields: 'id,message,created_time,from{id,name,picture}',
+            access_token: pageAccessToken,
+            limit: 10
+          },
+          (postsResponse: { data: FacebookPost[] }) => {
+            if (postsResponse && !postsResponse.error) {
+              const fetchedPosts = postsResponse.data
+                .filter(post => post.message) // Only include posts with messages
+                .map(post => ({
+                  id: post.id,
+                  content: post.message,
+                  authorName: post.from.name,
+                  authorProfilePic: post.from.picture?.data?.url || 
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(post.from.name)}`,
+                  timestamp: post.created_time,
+                  isPage: post.from.id === pageId
+                }));
+              
+              setPosts(fetchedPosts);
+              
+              // For each post, fetch its comments
+              const commentPromises = fetchedPosts.map(post => 
+                new Promise<void>((resolve) => {
+                  window.FB.api(
+                    `/${post.id}/comments`,
+                    'GET',
+                    {
+                      fields: 'id,message,created_time,from{id,name,picture}',
+                      access_token: pageAccessToken,
+                      limit: 25
+                    },
+                    (commentsResponse: { data: FacebookComment[] }) => {
+                      if (commentsResponse && !commentsResponse.error && commentsResponse.data) {
+                        const postComments = commentsResponse.data.map(comment => ({
+                          id: comment.id,
+                          postId: post.id,
+                          authorName: comment.from.name,
+                          authorProfilePic: comment.from.picture?.data?.url ||
+                            `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.from.name)}`,
+                          content: comment.message,
+                          timestamp: comment.created_time,
+                          sentiment: determineSentiment(comment.message),
+                          hidden: false,
+                          isPage: comment.from.id === pageId
+                        }));
+                        
+                        setComments(prev => [...prev, ...postComments]);
+                        
+                        // Expand the first post by default
+                        if (fetchedPosts.length > 0) {
+                          setExpandedPosts(prev => ({
+                            ...prev,
+                            [fetchedPosts[0].id]: true
+                          }));
+                        }
+                      }
+                      resolve();
+                    }
+                  );
+                })
+              );
+              
+              Promise.all(commentPromises).then(() => {
+                setLoading(false);
+              });
+            } else {
+              toast({
+                title: "Errore",
+                description: "Impossibile recuperare i post della pagina",
+                variant: "destructive"
+              });
+              setLoading(false);
+            }
+          }
+        );
+        
+        // Also fetch tagged posts (mentions)
+        window.FB.api(
+          `/${pageId}/tagged`,
+          'GET',
+          {
+            fields: 'id,message,created_time,from{id,name,picture,category},story',
+            access_token: pageAccessToken,
+            limit: 10
+          },
+          (response: any) => {
+            if (response && !response.error && response.data) {
+              const fetchedMentions = response.data
+                .filter((mention: any) => mention.message || mention.story)
+                .map((mention: any) => ({
+                  id: mention.id,
+                  postId: `external_${mention.id}`,
+                  postContent: mention.message || mention.story,
+                  authorName: mention.from.name,
+                  authorProfilePic: mention.from.picture?.data?.url || 
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(mention.from.name)}`,
+                  authorType: mention.from.category ? "page" : "user",
+                  timestamp: mention.created_time,
+                  sentiment: determineSentiment(mention.message || mention.story)
+                }));
+              setMentions(fetchedMentions);
+            }
+          }
+        );
+      } catch (error) {
+        console.error("Error fetching Facebook data:", error);
+        toast({
+          title: "Errore",
+          description: "Si è verificato un errore durante il recupero dei dati",
+          variant: "destructive"
+        });
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [toast]);
+
+  // Simple sentiment analysis function
+  const determineSentiment = (text: string): Sentiment => {
+    const positiveWords = ['buono', 'ottimo', 'fantastico', 'eccellente', 'grazie', 'adoro', 'piace', 'bravo', 'gentile', 'bello'];
+    const negativeWords = ['cattivo', 'pessimo', 'terribile', 'orribile', 'odio', 'scadente', 'male', 'lento', 'scarso', 'costoso'];
+    
+    text = text.toLowerCase();
+    
+    let positiveScore = 0;
+    let negativeScore = 0;
+    
+    positiveWords.forEach(word => {
+      if (text.includes(word)) positiveScore++;
+    });
+    
+    negativeWords.forEach(word => {
+      if (text.includes(word)) negativeScore++;
+    });
+    
+    if (positiveScore > negativeScore) return 'positive';
+    if (negativeScore > positiveScore) return 'negative';
+    return 'neutral';
+  };
 
   const handleToggleHidden = (commentId: string) => {
     setComments(
@@ -277,6 +286,8 @@ const CommentTable = () => {
   const handleDelete = (commentId: string) => {
     const comment = comments.find(c => c.id === commentId);
     if (comment) {
+      // In a real implementation, you would call the Facebook API to delete the comment
+      // For now, we're just removing it from the local state
       setComments(comments.filter((c) => c.id !== commentId));
       toast({
         title: "Contenuto eliminato",
@@ -291,6 +302,152 @@ const CommentTable = () => {
       ...expandedPosts,
       [postId]: !expandedPosts[postId],
     });
+  };
+
+  const handleRefresh = () => {
+    setComments([]);
+    setPosts([]);
+    setMentions([]);
+    setLoading(true);
+    
+    // Reset expanded posts
+    setExpandedPosts({});
+    
+    const fetchData = async () => {
+      // Similar logic as in the useEffect, but we're calling it manually
+      const pageData = localStorage.getItem("selectedPage");
+      const pageAccessToken = localStorage.getItem("pageAccessToken");
+      
+      if (!pageData || !pageAccessToken || typeof window.FB === 'undefined') {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        const page = JSON.parse(pageData);
+        const pageId = page.id;
+        
+        // Fetch posts from the page
+        window.FB.api(
+          `/${pageId}/posts`,
+          'GET',
+          {
+            fields: 'id,message,created_time,from{id,name,picture}',
+            access_token: pageAccessToken,
+            limit: 10
+          },
+          (postsResponse: { data: FacebookPost[] }) => {
+            if (postsResponse && !postsResponse.error) {
+              const fetchedPosts = postsResponse.data
+                .filter(post => post.message) // Only include posts with messages
+                .map(post => ({
+                  id: post.id,
+                  content: post.message,
+                  authorName: post.from.name,
+                  authorProfilePic: post.from.picture?.data?.url || 
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(post.from.name)}`,
+                  timestamp: post.created_time,
+                  isPage: post.from.id === pageId
+                }));
+              
+              setPosts(fetchedPosts);
+              
+              // For each post, fetch its comments
+              const commentPromises = fetchedPosts.map(post => 
+                new Promise<void>((resolve) => {
+                  window.FB.api(
+                    `/${post.id}/comments`,
+                    'GET',
+                    {
+                      fields: 'id,message,created_time,from{id,name,picture}',
+                      access_token: pageAccessToken,
+                      limit: 25
+                    },
+                    (commentsResponse: { data: FacebookComment[] }) => {
+                      if (commentsResponse && !commentsResponse.error && commentsResponse.data) {
+                        const postComments = commentsResponse.data.map(comment => ({
+                          id: comment.id,
+                          postId: post.id,
+                          authorName: comment.from.name,
+                          authorProfilePic: comment.from.picture?.data?.url ||
+                            `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.from.name)}`,
+                          content: comment.message,
+                          timestamp: comment.created_time,
+                          sentiment: determineSentiment(comment.message),
+                          hidden: false,
+                          isPage: comment.from.id === pageId
+                        }));
+                        
+                        setComments(prev => [...prev, ...postComments]);
+                        
+                        // Expand the first post by default
+                        if (fetchedPosts.length > 0) {
+                          setExpandedPosts(prev => ({
+                            ...prev,
+                            [fetchedPosts[0].id]: true
+                          }));
+                        }
+                      }
+                      resolve();
+                    }
+                  );
+                })
+              );
+              
+              Promise.all(commentPromises).then(() => {
+                setLoading(false);
+              });
+            } else {
+              toast({
+                title: "Errore",
+                description: "Impossibile recuperare i post della pagina",
+                variant: "destructive"
+              });
+              setLoading(false);
+            }
+          }
+        );
+        
+        // Also fetch tagged posts (mentions)
+        window.FB.api(
+          `/${pageId}/tagged`,
+          'GET',
+          {
+            fields: 'id,message,created_time,from{id,name,picture,category},story',
+            access_token: pageAccessToken,
+            limit: 10
+          },
+          (response: any) => {
+            if (response && !response.error && response.data) {
+              const fetchedMentions = response.data
+                .filter((mention: any) => mention.message || mention.story)
+                .map((mention: any) => ({
+                  id: mention.id,
+                  postId: `external_${mention.id}`,
+                  postContent: mention.message || mention.story,
+                  authorName: mention.from.name,
+                  authorProfilePic: mention.from.picture?.data?.url || 
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(mention.from.name)}`,
+                  authorType: mention.from.category ? "page" : "user",
+                  timestamp: mention.created_time,
+                  sentiment: determineSentiment(mention.message || mention.story)
+                }));
+              setMentions(fetchedMentions);
+            }
+          }
+        );
+      } catch (error) {
+        console.error("Error fetching Facebook data:", error);
+        toast({
+          title: "Errore",
+          description: "Si è verificato un errore durante il recupero dei dati",
+          variant: "destructive"
+        });
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
   };
 
   const filteredComments = comments.filter((comment) => {
@@ -347,7 +504,7 @@ const CommentTable = () => {
   };
 
   const getPostById = (postId: string) => {
-    return mockPosts.find(post => post.id === postId);
+    return posts.find(post => post.id === postId);
   };
 
   const getSentimentColor = (sentiment: Sentiment) => {
@@ -364,20 +521,48 @@ const CommentTable = () => {
   };
 
   const renderCommentsView = () => {
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
+            <p className="mt-4">Caricamento dei commenti in corso...</p>
+          </div>
+        </div>
+      );
+    }
+    
+    if (posts.length === 0) {
+      return (
+        <div className="text-center py-10 border rounded-md">
+          <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground" />
+          <p className="mt-2">Nessun post trovato per questa pagina</p>
+          <Button onClick={handleRefresh} className="mt-4" variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Aggiorna
+          </Button>
+        </div>
+      );
+    }
+
     if (Object.keys(commentsByPost).length === 0) {
       return (
         <div className="text-center py-10 border rounded-md">
           <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground" />
           <p className="mt-2">Nessun commento trovato</p>
+          <Button onClick={handleRefresh} className="mt-4" variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Aggiorna
+          </Button>
         </div>
       );
     }
 
     return (
       <div className="space-y-6">
-        {mockPosts.map(post => {
+        {posts.map(post => {
           const postComments = commentsByPost[post.id] || [];
-          if (postComments.length === 0) return null;
+          if (postComments.length === 0 && filter !== "all") return null;
 
           return (
             <Card key={post.id} className="border-gray-200">
@@ -388,6 +573,10 @@ const CommentTable = () => {
                       src={post.authorProfilePic}
                       alt={post.authorName}
                       className="h-10 w-10 rounded-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(post.authorName)}`;
+                      }}
                     />
                     <div>
                       <div className="font-medium flex items-center">
@@ -411,7 +600,9 @@ const CommentTable = () => {
                       <ChevronUp className="h-4 w-4" /> : 
                       <ChevronDown className="h-4 w-4" />
                     }
-                    <span className="ml-1">{postComments.length} commenti</span>
+                    <span className="ml-1">
+                      {postComments.length} {postComments.length === 1 ? "commento" : "commenti"}
+                    </span>
                   </Button>
                 </div>
                 <div className="mt-2 text-sm border-l-4 border-gray-200 pl-3">
@@ -421,104 +612,136 @@ const CommentTable = () => {
               
               {expandedPosts[post.id] && (
                 <CardContent>
-                  <ScrollArea className="h-[300px]">
-                    <div className="space-y-4">
-                      {postComments.map(comment => (
-                        <div 
-                          key={comment.id} 
-                          className={`p-3 rounded-md ${comment.hidden ? "bg-gray-50" : "bg-white border"}`}
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-start space-x-2">
-                              <img
-                                src={comment.authorProfilePic}
-                                alt={comment.authorName}
-                                className="h-8 w-8 rounded-full object-cover"
-                              />
-                              <div>
-                                <div className="font-medium flex items-center">
-                                  {comment.authorName}
-                                  {comment.isPage ? (
-                                    <Badge className="ml-2 bg-blue-100 text-blue-800 hover:bg-blue-200">
-                                      <Store className="h-3 w-3 mr-1" /> Pagina
-                                    </Badge>
-                                  ) : (
-                                    <Badge className="ml-2 bg-gray-100 text-gray-800 hover:bg-gray-200">
-                                      <User className="h-3 w-3 mr-1" /> Utente
-                                    </Badge>
-                                  )}
+                  {postComments.length === 0 ? (
+                    <div className="text-center py-6 text-muted-foreground text-sm">
+                      Nessun commento per questo post
+                    </div>
+                  ) : (
+                    <ScrollArea className="h-[300px]">
+                      <div className="space-y-4">
+                        {postComments.map(comment => (
+                          <div 
+                            key={comment.id} 
+                            className={`p-3 rounded-md ${comment.hidden ? "bg-gray-50" : "bg-white border"}`}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start space-x-2">
+                                <img
+                                  src={comment.authorProfilePic}
+                                  alt={comment.authorName}
+                                  className="h-8 w-8 rounded-full object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.authorName)}`;
+                                  }}
+                                />
+                                <div>
+                                  <div className="font-medium flex items-center">
+                                    {comment.authorName}
+                                    {comment.isPage ? (
+                                      <Badge className="ml-2 bg-blue-100 text-blue-800 hover:bg-blue-200">
+                                        <Store className="h-3 w-3 mr-1" /> Pagina
+                                      </Badge>
+                                    ) : (
+                                      <Badge className="ml-2 bg-gray-100 text-gray-800 hover:bg-gray-200">
+                                        <User className="h-3 w-3 mr-1" /> Utente
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {format(new Date(comment.timestamp), "dd/MM/yyyy HH:mm")}
+                                  </div>
                                 </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {format(new Date(comment.timestamp), "dd/MM/yyyy HH:mm")}
+                              </div>
+                              
+                              <div className="flex items-center space-x-2">
+                                <div className="flex items-center space-x-1 px-2 py-1 rounded-full bg-gray-100">
+                                  {getSentimentIcon(comment.sentiment)}
+                                  <span className={`text-xs ${getSentimentColor(comment.sentiment)}`}>
+                                    {comment.sentiment === "positive"
+                                      ? "Positivo"
+                                      : comment.sentiment === "negative"
+                                      ? "Negativo"
+                                      : "Neutro"}
+                                  </span>
+                                </div>
+                                
+                                <div className="flex space-x-1">
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-8 w-8 bg-gray-50 hover:bg-gray-100"
+                                    onClick={() => handleToggleHidden(comment.id)}
+                                    title={comment.hidden ? "Mostra commento" : "Nascondi commento"}
+                                  >
+                                    {comment.hidden ? (
+                                      <Eye className="h-4 w-4 text-blue-600" />
+                                    ) : (
+                                      <EyeOff className="h-4 w-4 text-gray-600" />
+                                    )}
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-8 w-8 bg-gray-50 hover:bg-red-50"
+                                    onClick={() => handleDelete(comment.id)}
+                                    title="Elimina commento"
+                                  >
+                                    <Trash2 className="h-4 w-4 text-red-600" />
+                                  </Button>
                                 </div>
                               </div>
                             </div>
                             
-                            <div className="flex items-center space-x-2">
-                              <div className="flex items-center space-x-1 px-2 py-1 rounded-full bg-gray-100">
-                                {getSentimentIcon(comment.sentiment)}
-                                <span className={`text-xs ${getSentimentColor(comment.sentiment)}`}>
-                                  {comment.sentiment === "positive"
-                                    ? "Positivo"
-                                    : comment.sentiment === "negative"
-                                    ? "Negativo"
-                                    : "Neutro"}
-                                </span>
-                              </div>
-                              
-                              <div className="flex space-x-1">
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-8 w-8 bg-gray-50 hover:bg-gray-100"
-                                  onClick={() => handleToggleHidden(comment.id)}
-                                  title={comment.hidden ? "Mostra commento" : "Nascondi commento"}
-                                >
-                                  {comment.hidden ? (
-                                    <Eye className="h-4 w-4 text-blue-600" />
-                                  ) : (
-                                    <EyeOff className="h-4 w-4 text-gray-600" />
-                                  )}
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-8 w-8 bg-gray-50 hover:bg-red-50"
-                                  onClick={() => handleDelete(comment.id)}
-                                  title="Elimina commento"
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-600" />
-                                </Button>
-                              </div>
+                            <div className={`mt-2 ${comment.hidden ? "italic text-muted-foreground" : ""}`}>
+                              {comment.hidden ? "[Commento nascosto]" : comment.content}
                             </div>
                           </div>
-                          
-                          <div className={`mt-2 ${comment.hidden ? "italic text-muted-foreground" : ""}`}>
-                            {comment.hidden ? "[Commento nascosto]" : comment.content}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  )}
                 </CardContent>
               )}
             </Card>
           );
         })}
+        
+        <div className="flex justify-center">
+          <Button onClick={handleRefresh} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Aggiorna commenti
+          </Button>
+        </div>
       </div>
     );
   };
 
   const renderMentionsView = () => {
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
+            <p className="mt-4">Caricamento delle menzioni in corso...</p>
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div className="space-y-6">
-        {mockMentions.length === 0 ? (
+        {mentions.length === 0 ? (
           <div className="text-center py-10 border rounded-md">
             <Tag className="mx-auto h-8 w-8 text-muted-foreground" />
             <p className="mt-2">Nessuna menzione trovata</p>
+            <Button onClick={handleRefresh} className="mt-4" variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Aggiorna
+            </Button>
           </div>
         ) : (
-          mockMentions.map(mention => (
+          mentions.map(mention => (
             <Card key={mention.id} className="border-gray-200">
               <CardHeader className="pb-3">
                 <div className="flex justify-between">
@@ -527,6 +750,10 @@ const CommentTable = () => {
                       src={mention.authorProfilePic}
                       alt={mention.authorName}
                       className="h-10 w-10 rounded-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(mention.authorName)}`;
+                      }}
                     />
                     <div>
                       <div className="font-medium flex items-center">
@@ -570,11 +797,32 @@ const CommentTable = () => {
             </Card>
           ))
         )}
+        
+        {mentions.length > 0 && (
+          <div className="flex justify-center">
+            <Button onClick={handleRefresh} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Aggiorna menzioni
+            </Button>
+          </div>
+        )}
       </div>
     );
   };
 
   const renderRatingsView = () => {
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
+            <p className="mt-4">Caricamento delle valutazioni in corso...</p>
+          </div>
+        </div>
+      );
+    }
+    
+    // Filter to create ratings from positive and negative comments
     const ratings = filteredComments
       .filter(comment => comment.sentiment !== "neutral")
       .map(comment => ({
@@ -588,93 +836,110 @@ const CommentTable = () => {
           <div className="text-center py-10 border rounded-md">
             <ThumbsUp className="mx-auto h-8 w-8 text-muted-foreground" />
             <p className="mt-2">Nessuna valutazione trovata</p>
+            <Button onClick={handleRefresh} className="mt-4" variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Aggiorna
+            </Button>
           </div>
         ) : (
-          ratings.map(rating => (
-            <Card key={rating.id} className="border-gray-200">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between">
-                  <div className="flex items-center space-x-2">
-                    <img
-                      src={rating.authorProfilePic}
-                      alt={rating.authorName}
-                      className="h-10 w-10 rounded-full object-cover"
-                    />
-                    <div>
-                      <div className="font-medium flex items-center">
-                        {rating.authorName}
-                        {rating.isPage ? (
-                          <Badge className="ml-2 bg-blue-100 text-blue-800 hover:bg-blue-200">
-                            <Store className="h-3 w-3 mr-1" /> Pagina
-                          </Badge>
-                        ) : (
-                          <Badge className="ml-2 bg-gray-100 text-gray-800 hover:bg-gray-200">
-                            <User className="h-3 w-3 mr-1" /> Utente
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {format(new Date(rating.timestamp), "dd/MM/yyyy HH:mm")}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <div key={i} className="mx-0.5">
-                          {i < rating.rating ? (
-                            <ThumbsUp 
-                              className={`h-4 w-4 ${rating.rating >= 4 ? "text-positive" : "text-negative"}`} 
-                              fill={rating.rating >= 4 ? "currentColor" : "currentColor"} 
-                            />
+          <>
+            {ratings.map(rating => (
+              <Card key={rating.id} className="border-gray-200">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between">
+                    <div className="flex items-center space-x-2">
+                      <img
+                        src={rating.authorProfilePic}
+                        alt={rating.authorName}
+                        className="h-10 w-10 rounded-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(rating.authorName)}`;
+                        }}
+                      />
+                      <div>
+                        <div className="font-medium flex items-center">
+                          {rating.authorName}
+                          {rating.isPage ? (
+                            <Badge className="ml-2 bg-blue-100 text-blue-800 hover:bg-blue-200">
+                              <Store className="h-3 w-3 mr-1" /> Pagina
+                            </Badge>
                           ) : (
-                            <ThumbsUp className="h-4 w-4 text-gray-300" />
+                            <Badge className="ml-2 bg-gray-100 text-gray-800 hover:bg-gray-200">
+                              <User className="h-3 w-3 mr-1" /> Utente
+                            </Badge>
                           )}
                         </div>
-                      ))}
+                        <div className="text-xs text-muted-foreground">
+                          {format(new Date(rating.timestamp), "dd/MM/yyyy HH:mm")}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <div key={i} className="mx-0.5">
+                            {i < rating.rating ? (
+                              <ThumbsUp 
+                                className={`h-4 w-4 ${rating.rating >= 4 ? "text-positive" : "text-negative"}`} 
+                                fill={rating.rating >= 4 ? "currentColor" : "currentColor"} 
+                              />
+                            ) : (
+                              <ThumbsUp className="h-4 w-4 text-gray-300" />
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                <div className="mt-3">
-                  <div className="flex gap-2 items-center mb-2">
-                    <Book className="h-4 w-4 text-facebook" />
-                    <h4 className="font-medium text-sm">Recensione:</h4>
-                  </div>
                   
-                  <p className="text-sm border-l-4 border-gray-200 pl-3">
-                    {rating.content}
-                  </p>
-                  
-                  <div className="flex justify-end mt-2 space-x-1">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8 bg-gray-50 hover:bg-gray-100"
-                      onClick={() => handleToggleHidden(rating.id)}
-                      title={rating.hidden ? "Mostra recensione" : "Nascondi recensione"}
-                    >
-                      {rating.hidden ? (
-                        <Eye className="h-4 w-4 text-blue-600" />
-                      ) : (
-                        <EyeOff className="h-4 w-4 text-gray-600" />
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8 bg-gray-50 hover:bg-red-50"
-                      onClick={() => handleDelete(rating.id)}
-                      title="Elimina recensione"
-                    >
-                      <Trash2 className="h-4 w-4 text-red-600" />
-                    </Button>
+                  <div className="mt-3">
+                    <div className="flex gap-2 items-center mb-2">
+                      <Book className="h-4 w-4 text-facebook" />
+                      <h4 className="font-medium text-sm">Recensione:</h4>
+                    </div>
+                    
+                    <p className="text-sm border-l-4 border-gray-200 pl-3">
+                      {rating.content}
+                    </p>
+                    
+                    <div className="flex justify-end mt-2 space-x-1">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 bg-gray-50 hover:bg-gray-100"
+                        onClick={() => handleToggleHidden(rating.id)}
+                        title={rating.hidden ? "Mostra recensione" : "Nascondi recensione"}
+                      >
+                        {rating.hidden ? (
+                          <Eye className="h-4 w-4 text-blue-600" />
+                        ) : (
+                          <EyeOff className="h-4 w-4 text-gray-600" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 bg-gray-50 hover:bg-red-50"
+                        onClick={() => handleDelete(rating.id)}
+                        title="Elimina recensione"
+                      >
+                        <Trash2 className="h-4 w-4 text-red-600" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-            </Card>
-          ))
+                </CardHeader>
+              </Card>
+            ))}
+            
+            <div className="flex justify-center">
+              <Button onClick={handleRefresh} variant="outline">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Aggiorna valutazioni
+              </Button>
+            </div>
+          </>
         )}
       </div>
     );

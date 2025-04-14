@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // Create type definitions for the Facebook SDK
 declare global {
@@ -42,6 +42,9 @@ const FacebookSDK: React.FC<FacebookSDKProps> = ({ onSDKLoaded }) => {
       if (onSDKLoaded) {
         onSDKLoaded();
       }
+      
+      // Dispatch a custom event that components can listen for
+      document.dispatchEvent(new Event('fb-sdk-loaded'));
     };
   }, [onSDKLoaded]);
 

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { ExternalLink } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface FacebookPage {
   id: string;
@@ -23,25 +24,67 @@ interface FacebookPage {
 
 const PageOverview = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [page, setPage] = useState<FacebookPage | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch real Facebook page data
-    // TODO: Implement Facebook API integration to fetch page details
-    const storedPage = localStorage.getItem("selectedPage");
-    if (storedPage) {
-      try {
-        const parsedPage = JSON.parse(storedPage);
-        setPage(parsedPage);
-      } catch (error) {
-        console.error("Error parsing stored page:", error);
+    const fetchPageData = () => {
+      const storedPage = localStorage.getItem("selectedPage");
+      if (storedPage) {
+        try {
+          const parsedPage = JSON.parse(storedPage);
+          setPage(parsedPage);
+        } catch (error) {
+          console.error("Error parsing stored page:", error);
+          toast({
+            title: "Errore",
+            description: "Impossibile caricare i dati della pagina",
+            variant: "destructive"
+          });
+        }
       }
+      setLoading(false);
+    };
+
+    // Check if Facebook SDK is loaded
+    if (window.FB) {
+      fetchPageData();
+    } else {
+      // Add event listener for when SDK is loaded
+      const handleSDKLoaded = () => {
+        fetchPageData();
+        // Remove the event listener once it's executed
+        document.removeEventListener('fb-sdk-loaded', handleSDKLoaded);
+      };
+      document.addEventListener('fb-sdk-loaded', handleSDKLoaded);
+      
+      // Safety timeout in case the event never fires
+      setTimeout(() => {
+        fetchPageData();
+        document.removeEventListener('fb-sdk-loaded', handleSDKLoaded);
+      }, 3000);
     }
-  }, []);
+  }, [toast]);
 
   const handleChangePage = () => {
     navigate("/page-data");
   };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Caricamento...</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-6">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!page) {
     return (
