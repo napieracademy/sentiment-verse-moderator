@@ -14,6 +14,23 @@ interface FacebookSDKProps {
   onSDKLoaded?: () => void;
 }
 
+// Export the login function so other components can use it
+export const handleFacebookLogin = async () => {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'facebook',
+    options: {
+      scopes: 'public_profile,pages_show_list,pages_read_engagement,pages_read_user_content'
+    }
+  });
+
+  if (error) {
+    console.error('Error logging in with Facebook:', error);
+    return { error };
+  }
+  
+  return { data };
+};
+
 const FacebookSDK: React.FC<FacebookSDKProps> = ({ onSDKLoaded }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -48,20 +65,6 @@ const FacebookSDK: React.FC<FacebookSDKProps> = ({ onSDKLoaded }) => {
       document.dispatchEvent(new Event('fb-sdk-loaded'));
     };
   }, [onSDKLoaded]);
-
-  // Add Supabase Facebook login method
-  const handleFacebookLogin = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'facebook',
-      options: {
-        scopes: 'public_profile,pages_show_list,pages_read_engagement,pages_read_user_content'
-      }
-    });
-
-    if (error) {
-      console.error('Error logging in with Facebook:', error);
-    }
-  };
 
   return null; // This component doesn't render anything
 };

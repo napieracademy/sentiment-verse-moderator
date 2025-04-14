@@ -2,10 +2,26 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
+import { Facebook } from "lucide-react";
 import Header from "@/components/dashboard/Header";
 import Footer from "@/components/dashboard/Footer";
+import { handleFacebookLogin } from "@/components/FacebookSDK";
+import { useToast } from "@/hooks/use-toast";
 
 const Index: React.FC = () => {
+  const { toast } = useToast();
+
+  const handleLogin = async () => {
+    const { error } = await handleFacebookLogin();
+    if (error) {
+      toast({
+        title: "Errore di accesso",
+        description: "Non è stato possibile accedere con Facebook. Riprova.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -24,6 +40,17 @@ const Index: React.FC = () => {
               Visualizza Dati Pagine Facebook
             </Link>
           </Button>
+          
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="flex items-center gap-2 border-facebook text-facebook hover:bg-facebook/10"
+            onClick={handleLogin}
+          >
+            <Facebook size={18} />
+            Accedi con Facebook
+          </Button>
+          
           <p className="text-sm text-muted-foreground">
             Accedi con Facebook per vedere i dati reali delle tue pagine
           </p>
