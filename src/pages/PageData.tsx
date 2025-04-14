@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import Header from "@/components/dashboard/Header";
 import Footer from "@/components/dashboard/Footer";
 import { supabase } from '@/integrations/supabase/client';
+import { fetchFacebookPages } from '@/utils/facebookToken';
 
 interface FacebookPage {
   id: string;
@@ -55,56 +55,27 @@ const PageData = () => {
       return;
     }
 
-    try {
-      // Recupera il token di accesso di Facebook dall'autenticazione di Supabase
-      const providerToken = session.provider_token;
-      
-      if (!providerToken) {
-        toast({
-          title: "Token mancante",
-          description: "Non è stato possibile recuperare il token di accesso di Facebook.",
-          variant: "destructive"
-        });
-        setLoading(false);
-        return;
-      }
-      
-      // Chiamata a un'edge function di Supabase per recuperare le pagine di Facebook
-      const { data, error } = await supabase.functions.invoke('fetch-facebook-pages', {
-        body: { accessToken: providerToken }
-      });
-      
-      if (error) {
-        console.error("Errore nella chiamata all'edge function:", error);
-        toast({
-          title: "Errore",
-          description: "Non è stato possibile recuperare le pagine Facebook.",
-          variant: "destructive"
-        });
-        setLoading(false);
-        return;
-      }
-      
-      if (data && data.pages && data.pages.length > 0) {
-        setPages(data.pages);
-        setSelectedPage(data.pages[0]);
-        
-        // Salva il token di accesso della pagina per usarlo nelle chiamate successive
-        if (data.pages[0].access_token) {
-          localStorage.setItem('pageAccessToken', data.pages[0].access_token);
-        }
-      }
-      
+    setLoading(true);
+    
+    // Usiamo la nuova funzione di utilità per recuperare le pagine Facebook
+    const { pages, error } = await fetchFacebookPages();
+    
+    if (error) {
       setLoading(false);
-    } catch (error) {
-      console.error("Errore durante il recupero delle pagine:", error);
-      toast({
-        title: "Errore",
-        description: "Si è verificato un errore durante il recupero delle pagine Facebook.",
-        variant: "destructive"
-      });
-      setLoading(false);
+      return;
     }
+    
+    if (pages.length > 0) {
+      setPages(pages);
+      setSelectedPage(pages[0]);
+      
+      // Salva il token di accesso della pagina per usarlo nelle chiamate successive
+      if (pages[0].access_token) {
+        localStorage.setItem('pageAccessToken', pages[0].access_token);
+      }
+    }
+    
+    setLoading(false);
   };
 
   const handleSelectPage = (page: FacebookPage) => {

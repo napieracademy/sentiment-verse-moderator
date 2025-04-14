@@ -14,18 +14,23 @@ serve(async (req) => {
   }
 
   try {
-    const { accessToken } = await req.json();
+    const { accessToken, customToken } = await req.json();
     
-    if (!accessToken) {
+    // Use either the custom token provided or fall back to the access token from auth
+    const tokenToUse = customToken || accessToken;
+    
+    if (!tokenToUse) {
       return new Response(
         JSON.stringify({ error: 'Token di accesso mancante' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
+    console.log('Chiamata API Facebook con token fornito');
+    
     // Ottieni le pagine dell'utente da Facebook
     const pagesResponse = await fetch(
-      `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,category,picture,fan_count,link,about,description,followers_count,location&access_token=${accessToken}`,
+      `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,category,picture,fan_count,link,about,description,followers_count,location&access_token=${tokenToUse}`,
       { method: 'GET' }
     );
     
