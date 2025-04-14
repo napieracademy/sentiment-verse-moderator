@@ -1,34 +1,65 @@
-
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Bell } from "lucide-react";
+import { useNavigate, NavLink, useLocation } from "react-router-dom";
+import { Bell, Home, BarChart2, MessageSquare, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [notificationsVisible, setNotificationsVisible] = useState(false);
+
+  // Array delle pagine principali per la navigazione
+  const navigationItems = [
+    { path: "/", label: "Home", icon: Home },
+    { path: "/facebook-data", label: "Facebook Data", icon: Database },
+    { path: "/page-data", label: "Page Data", icon: MessageSquare },
+    { path: "/dashboard", label: "Dashboard", icon: BarChart2 }
+  ];
 
   return (
     <header className="border-b py-3 px-6 bg-white z-10">
       <div className="container flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          <div className="bg-facebook p-1.5 rounded-lg">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-5 w-5 text-white"
-            >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              <path d="M13 8H7" />
-              <path d="M13 12H7" />
-            </svg>
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-2">
+            <div className="bg-facebook p-1.5 rounded-lg">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5 text-white"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                <path d="M13 8H7" />
+                <path d="M13 12H7" />
+              </svg>
+            </div>
+            <span className="font-bold">SentimentVerse</span>
           </div>
-          <span className="font-bold">SentimentVerse</span>
+          
+          {/* Navigation Menu */}
+          <nav className="hidden md:flex items-center space-x-1">
+            {navigationItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) => 
+                  `px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-1 transition-colors
+                   ${isActive 
+                     ? 'bg-blue-50 text-blue-700' 
+                     : 'text-gray-700 hover:bg-gray-100'
+                   }`
+                }
+                end={item.path === "/"}
+              >
+                <item.icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </nav>
         </div>
         <div className="flex items-center space-x-4">
           <div className="relative">

@@ -1,6 +1,6 @@
-
 import { ChevronUp, Menu } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -16,6 +16,7 @@ import {
   CollapsibleContent 
 } from "@/components/ui/collapsible";
 import { menuItems, toolItems } from "./MenuItems";
+import { Home, BarChart2, MessageSquare, Database } from "lucide-react";
 
 interface DrawerMenuProps {
   activeTab: string;
@@ -26,6 +27,17 @@ const DrawerMenu = ({ activeTab, setActiveTab }: DrawerMenuProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mainMenuOpen, setMainMenuOpen] = useState(true);
   const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
+  const [navMenuOpen, setNavMenuOpen] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Array delle pagine principali per la navigazione
+  const navigationItems = [
+    { path: "/", label: "Home", icon: Home },
+    { path: "/facebook-data", label: "Facebook Data", icon: Database },
+    { path: "/page-data", label: "Page Data", icon: MessageSquare },
+    { path: "/dashboard", label: "Dashboard", icon: BarChart2 }
+  ];
   
   // Add border effect when menu is open
   useEffect(() => {
@@ -76,6 +88,44 @@ const DrawerMenu = ({ activeTab, setActiveTab }: DrawerMenuProps) => {
                 </Button>
               </DrawerClose>
             </div>
+
+            {/* Navigation Menu */}
+            <Collapsible
+              open={navMenuOpen}
+              onOpenChange={setNavMenuOpen}
+              className="mb-3"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs uppercase font-semibold text-gray-500 mb-1">Navigazione</h3>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
+                    {navMenuOpen ? "Chiudi" : "Apri"}
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
+              <CollapsibleContent>
+                <div className="flex flex-col space-y-1 mt-2">
+                  {navigationItems.map((item) => (
+                    <Button
+                      key={item.path}
+                      variant={location.pathname === item.path ? "default" : "ghost"}
+                      className={`justify-start h-10 text-sm ${
+                        location.pathname === item.path 
+                          ? "bg-facebook text-primary-foreground font-medium" 
+                          : "hover:bg-accent"
+                      }`}
+                      onClick={() => {
+                        navigate(item.path);
+                        setMenuOpen(false);
+                      }}
+                    >
+                      <item.icon className="h-4 w-4 mr-2" />
+                      <span>{item.label}</span>
+                    </Button>
+                  ))}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             {/* Main Menu */}
             <Collapsible
