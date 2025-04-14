@@ -1,24 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { Comment, FacebookApiResponse, FacebookComment, FacebookPost, Mention, Post } from '../types';
 import { determineSentiment } from '../utils';
 
-// Define global FB type to avoid TypeScript errors
-interface FacebookSDK {
-  api: (
-    path: string,
-    method: string,
-    params: any,
-    callback: (response: any) => void
-  ) => void;
-}
-
-declare global {
-  interface Window {
-    FB?: FacebookSDK;
-  }
-}
+// We don't need to redefine the FacebookSDK interface here since it's in facebook.d.ts
+// Just reference the global type in comments
 
 export const useFacebookData = () => {
   const [comments, setComments] = useState<Comment[]>([]);

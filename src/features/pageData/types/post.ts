@@ -18,4 +18,3 @@ export interface PostDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
 }
-

@@ -41,7 +41,7 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
   }, [open, sdkLoaded]);
 
   const fetchUserData = (authResponse: any) => {
-    window.FB.api('/me', function(response: any) {
+    window.FB.api('/me', { }, function(response: any) {
       console.log('User data retrieved:', response);
       setUserData({
         name: response.name,
@@ -79,7 +79,10 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
         });
         setLoading(false);
       }
-    }, {scope: 'public_profile,pages_show_list,pages_read_engagement,pages_read_user_content', auth_type: 'rerequest'});
+    }, {
+      scope: 'public_profile,pages_show_list,pages_read_engagement,pages_read_user_content', 
+      auth_type: 'rerequest'
+    });
   };
 
   const handlePermissionGrant = () => {
