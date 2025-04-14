@@ -8,18 +8,19 @@ import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import Header from "@/components/dashboard/Header";
 import Footer from "@/components/dashboard/Footer";
+import { supabase } from '@/integrations/supabase/client';
 
 interface FacebookPage {
   id: string;
   name: string;
   category: string;
-  picture: {
+  picture?: {
     data: {
       url: string;
     }
   };
-  fan_count: number;
-  link: string;
+  fan_count?: number;
+  link?: string;
   about?: string;
   description?: string;
   followers_count?: number;
@@ -36,88 +37,66 @@ const PageData = () => {
   const [selectedPage, setSelectedPage] = useState<FacebookPage | null>(null);
 
   useEffect(() => {
-    // Check if the user is logged in to Facebook
-    if (typeof window.FB === 'undefined') {
+    // Check if user is authenticated with Supabase
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
       toast({
-        title: "Errore di inizializzazione",
-        description: "Il componente Facebook SDK non è stato caricato correttamente.",
+        title: "Autenticazione richiesta",
+        description: "Devi accedere con Facebook per visualizzare le tue pagine.",
         variant: "destructive"
       });
       navigate('/');
       return;
     }
 
-    // Get user login status
-    window.FB.getLoginStatus((response) => {
-      if (response.status !== 'connected') {
-        toast({
-          title: "Autenticazione richiesta",
-          description: "Devi accedere con Facebook per visualizzare le tue pagine.",
-          variant: "destructive"
-        });
-        navigate('/');
-        return;
-      }
-
-      // Get user's pages
-      fetchUserPages(response.authResponse.accessToken);
-    });
-  }, [navigate]);
-
-  const fetchUserPages = (accessToken: string) => {
-    window.FB.api('/me/accounts', { access_token: accessToken }, (response) => {
-      if (response && !response.error) {
-        if (response.data && response.data.length > 0) {
-          setPages(response.data);
-          setSelectedPage(response.data[0]); // Select the first page by default
-        } else {
-          toast({
-            title: "Nessuna pagina trovata",
-            description: "Non hai accesso a nessuna pagina Facebook.",
-          });
-        }
-      } else {
-        toast({
-          title: "Errore",
-          description: "Impossibile recuperare le informazioni delle pagine: " + (response.error?.message || "errore sconosciuto"),
-          variant: "destructive"
-        });
-      }
-      setLoading(false);
-    });
-  };
-
-  const fetchPageDetails = (pageId: string, accessToken: string) => {
-    setLoading(true);
-    
-    window.FB.api(
-      `/${pageId}`,
-      'GET',
+    // Mock data for development - in a real app, you would call the Facebook API through a Supabase Edge Function
+    // to protect your app's authentication and API keys
+    const mockPages = [
       {
-        fields: 'id,name,category,picture,fan_count,link,about,description,followers_count,location',
-        access_token: accessToken
-      },
-      (response) => {
-        if (response && !response.error) {
-          setSelectedPage(response);
-        } else {
-          toast({
-            title: "Errore",
-            description: "Impossibile recuperare i dettagli della pagina: " + (response.error?.message || "errore sconosciuto"),
-            variant: "destructive"
-          });
+        id: "103934859335825",
+        name: "Test Page",
+        category: "Interest",
+        picture: {
+          data: {
+            url: "https://via.placeholder.com/50x50"
+          }
+        },
+        fan_count: 25,
+        followers_count: 27,
+        about: "A test page for development",
+        description: "This is a mock page for testing the Facebook integration",
+        link: "https://facebook.com",
+        location: {
+          city: "Rome",
+          country: "Italy"
         }
-        setLoading(false);
+      },
+      {
+        id: "107207709008274",
+        name: "Another Test Page",
+        category: "Business",
+        picture: {
+          data: {
+            url: "https://via.placeholder.com/50x50"
+          }
+        },
+        fan_count: 42,
+        followers_count: 45
       }
-    );
+    ];
+
+    setPages(mockPages);
+    setSelectedPage(mockPages[0]);
+    setLoading(false);
   };
 
   const handleSelectPage = (page: FacebookPage) => {
-    window.FB.getLoginStatus((response) => {
-      if (response.status === 'connected') {
-        fetchPageDetails(page.id, response.authResponse.accessToken);
-      }
-    });
+    setSelectedPage(page);
   };
 
   const handleGoToDashboard = () => {
