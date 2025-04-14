@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -99,7 +98,6 @@ const PageSelectionModal = ({
     // Fetch more detailed page information with the page access token
     window.FB.api(
       `/${selectedPageId}`,
-      'GET',
       {
         fields: 'id,name,category,picture,fan_count,link,about,description,followers_count,location',
         access_token: selectedPage.access_token

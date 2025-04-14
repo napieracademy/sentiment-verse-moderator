@@ -35,7 +35,6 @@ export const useFacebookData = () => {
       // Fetch posts from the page
       window.FB.api(
         `/${pageId}/posts`,
-        'GET',
         {
           fields: 'id,message,created_time,from{id,name,picture}',
           access_token: pageAccessToken,
@@ -62,7 +61,6 @@ export const useFacebookData = () => {
               new Promise<void>((resolve) => {
                 window.FB.api(
                   `/${post.id}/comments`,
-                  'GET',
                   {
                     fields: 'id,message,created_time,from{id,name,picture}',
                     access_token: pageAccessToken,
@@ -118,7 +116,6 @@ export const useFacebookData = () => {
       // Also fetch tagged posts (mentions)
       window.FB.api(
         `/${pageId}/tagged`,
-        'GET',
         {
           fields: 'id,message,created_time,from{id,name,picture,category},story',
           access_token: pageAccessToken,
