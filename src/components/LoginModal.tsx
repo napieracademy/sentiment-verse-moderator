@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 type LoginModalProps = {
   open: boolean;
@@ -18,10 +19,46 @@ type LoginModalProps = {
 
 const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
   const [step, setStep] = useState<'login' | 'permissions'>('login');
+  const [loading, setLoading] = useState(false);
+  const [userData, setUserData] = useState<{name?: string, id?: string} | null>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleLogin = () => {
-    setStep('permissions');
+  const handleFacebookLogin = () => {
+    setLoading(true);
+    
+    if (!window.FB) {
+      toast({
+        title: "Errore",
+        description: "SDK di Facebook non caricato correttamente",
+        variant: "destructive"
+      });
+      setLoading(false);
+      return;
+    }
+    
+    window.FB.login(function(response: any) {
+      if (response.authResponse) {
+        console.log('Welcome! Fetching your information....');
+        window.FB.api('/me', function(response: any) {
+          console.log('Good to see you, ' + response.name + '.');
+          setUserData({
+            name: response.name,
+            id: response.id
+          });
+          setStep('permissions');
+          setLoading(false);
+        });
+      } else {
+        console.log('User cancelled login or did not fully authorize.');
+        toast({
+          title: "Accesso annullato",
+          description: "L'utente ha annullato l'accesso o non ha autorizzato completamente",
+          variant: "destructive"
+        });
+        setLoading(false);
+      }
+    }, {scope: 'public_profile,pages_show_list,pages_read_engagement,pages_read_user_content'});
   };
 
   const handlePermissionGrant = () => {
@@ -38,7 +75,7 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
           </DialogTitle>
           <DialogDescription className="text-center">
             {step === 'login' 
-              ? 'Inserisci le tue credenziali Facebook per continuare' 
+              ? 'Utilizza il tuo account Facebook per accedere' 
               : 'SentimentVerse richiede i seguenti permessi'}
           </DialogDescription>
         </DialogHeader>
@@ -51,37 +88,52 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
                   <path d="M36 18C36 8.059 27.941 0 18 0S0 8.059 0 18c0 8.983 6.589 16.435 15.188 17.784V23.16h-4.57V18h4.57v-3.958c0-4.511 2.687-7.006 6.797-7.006 1.97 0 4.028.352 4.028.352v4.429h-2.269c-2.237 0-2.933 1.387-2.933 2.81V18h4.991l-.797 5.16h-4.194v12.624C29.411 34.435 36 26.983 36 18Z"></path>
                 </svg>
               </div>
-            
-              <div className="grid w-full items-center gap-3">
-                <input 
-                  type="email"
-                  placeholder="Email o numero di telefono"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                />
-                <input 
-                  type="password"
-                  placeholder="Password"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                />
-              </div>
               
-              <Button 
-                onClick={handleLogin} 
-                className="w-full fb-button"
-              >
-                Accedi
-              </Button>
-              
-              <div className="text-center text-sm text-muted-foreground">
-                <a href="#" className="text-facebook hover:underline">Password dimenticata?</a>
-              </div>
-              
-              <hr className="my-2" />
-              
-              <div className="text-center">
-                <Button variant="outline" className="bg-green-600 text-white hover:bg-green-700">
-                  Crea nuovo account
+              {/* Real Facebook Login Button */}
+              <div className="flex justify-center">
+                <Button 
+                  onClick={handleFacebookLogin} 
+                  disabled={loading}
+                  className="fb-button flex items-center justify-center w-full bg-facebook text-white hover:bg-facebook/90"
+                >
+                  {loading ? "Caricamento..." : "Continua con Facebook"}
                 </Button>
+              </div>
+              
+              {/* Alternative login form - kept for design consistency */}
+              <div className="mt-4 text-center">
+                <p className="text-sm text-gray-500 mb-4">Oppure accedi direttamente</p>
+                <div className="grid w-full items-center gap-3">
+                  <input 
+                    type="email"
+                    placeholder="Email o numero di telefono"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  />
+                  <input 
+                    type="password"
+                    placeholder="Password"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  />
+                </div>
+                
+                <Button 
+                  onClick={handleFacebookLogin} 
+                  className="w-full fb-button mt-3"
+                >
+                  Accedi
+                </Button>
+                
+                <div className="text-center text-sm text-muted-foreground mt-2">
+                  <a href="#" className="text-facebook hover:underline">Password dimenticata?</a>
+                </div>
+                
+                <hr className="my-4" />
+                
+                <div className="text-center">
+                  <Button variant="outline" className="bg-green-600 text-white hover:bg-green-700">
+                    Crea nuovo account
+                  </Button>
+                </div>
               </div>
             </>
           ) : (
@@ -156,7 +208,7 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
               className="fb-button"
               onClick={handlePermissionGrant}
             >
-              Continua come Mario
+              {userData?.name ? `Continua come ${userData.name}` : 'Continua'}
             </Button>
           </DialogFooter>
         )}

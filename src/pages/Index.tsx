@@ -2,12 +2,21 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import LoginModal from "@/components/LoginModal";
+import FacebookSDK from "@/components/FacebookSDK";
 
 const Index = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
+  // Function to handle Facebook login button click
+  const handleFacebookLoginClick = () => {
+    setIsLoginModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Add Facebook SDK component */}
+      <FacebookSDK />
+
       {/* Header */}
       <header className="border-b py-4 px-6">
         <div className="container flex justify-between items-center">
@@ -31,7 +40,7 @@ const Index = () => {
             <span className="font-bold text-xl">SentimentVerse</span>
           </div>
           <Button
-            onClick={() => setIsLoginModalOpen(true)}
+            onClick={handleFacebookLoginClick}
             className="fb-button"
           >
             Accedi con Facebook
@@ -267,7 +276,7 @@ const Index = () => {
             Facebook con strumenti di analisi del sentiment avanzati.
           </p>
           <Button
-            onClick={() => setIsLoginModalOpen(true)}
+            onClick={handleFacebookLoginClick}
             size="lg"
             variant="outline"
             className="bg-white text-facebook hover:bg-gray-100"

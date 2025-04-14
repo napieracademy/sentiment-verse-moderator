@@ -55,7 +55,7 @@ const DrawerMenu = ({ activeTab, setActiveTab }: DrawerMenuProps) => {
         <DrawerTrigger asChild>
           <Button 
             size="icon" 
-            className="h-12 w-12 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all"
+            className="h-12 w-12 rounded-full shadow-lg bg-facebook hover:bg-facebook/90 transition-all"
             aria-label="Open menu"
           >
             <Menu className="h-6 w-6" />
@@ -99,7 +99,7 @@ const DrawerMenu = ({ activeTab, setActiveTab }: DrawerMenuProps) => {
                       variant={activeTab === item.value ? "default" : "ghost"}
                       className={`justify-start h-10 text-sm ${
                         activeTab === item.value 
-                          ? "bg-primary text-primary-foreground font-medium" 
+                          ? "bg-facebook text-primary-foreground font-medium" 
                           : "hover:bg-accent"
                       }`}
                       onClick={() => {
@@ -142,7 +142,7 @@ const DrawerMenu = ({ activeTab, setActiveTab }: DrawerMenuProps) => {
                       variant={activeTab === item.value ? "default" : "ghost"}
                       className={`justify-start h-10 text-sm ${
                         activeTab === item.value 
-                          ? "bg-primary text-primary-foreground font-medium" 
+                          ? "bg-facebook text-primary-foreground font-medium" 
                           : "hover:bg-accent"
                       }`}
                       onClick={() => {
