@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 3333,
-    strictPort: false,
+    strictPort: true,
     open: false
   },
   plugins: [
