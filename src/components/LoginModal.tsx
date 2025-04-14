@@ -141,7 +141,7 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
                     className="text-facebook hover:underline"
                   >
                     Informativa sulla Privacy
-                  </a>.
+                  </a>. 
                   Non pubblicheremo nulla sul tuo profilo Facebook senza la tua autorizzazione.
                 </p>
                 <p className="mt-2">
