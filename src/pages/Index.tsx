@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -36,7 +35,7 @@ const Index: React.FC = () => {
         
         <div className="flex flex-col items-center space-y-4">
           <Button size="lg" asChild>
-            <Link to="/page-data">
+            <Link to="/facebook-data">
               Visualizza Dati Pagine Facebook
             </Link>
           </Button>
