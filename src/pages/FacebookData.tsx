@@ -160,7 +160,7 @@ const FacebookData = () => {
   // Mappa di token specifici per pagina
   const pageTokens: Record<string, string> = {
     "121428567930871": "EAARrf6dn8hIBO0ncV0G3zZCy6Pk1bBXZCot0KhDFVcHvba6OguZANMYlJp3ozq7h5nTAF2o2h1H3lyftV7fc0Cy2NmvmBJowmXrVPU627ykxqz7aGxbyVZBq7fUimHdWOddcLCZAQ1kzSMSEEQMqHS3wDZBU4FqmCqLpls7C5TFB55tqMZBXey0PhtThrkN1mqCQthAJSyjshd2GqIZD", // Te la do io Firenze
-    "111619452357834": "EAARrf6dn8hIBO0ncV0G3zZCy6Pk1bBXZCot0KhDFVcHvba6OguZANMYlJp3ozq7h5nTAF2o2h1H3lyftV7fc0Cy2NmvmBJowmXrVPU627ykxqz7aGxbyVZBq7fUimHdWOddcLCZAQ1kzSMSEEQMqHS3wDZBU4FqmCqLpls7C5TFB55tqMZBXey0PhtThrkN1mqCQthAJSyjshd2GqIZD"  // Metro - The Game (aggiornato con token funzionante)
+    "111619452357834": "EAARrf6dn8hIBO4kLX2CKhXvUi1oLOeeC0dwZAxt0dsQgC2ZCZC6gnXeGcBtwgnTnWlOyiJMoAzHZAz9SK9ZA9QRwQ2v4K0Nqo6b4OqGbnfzRgOWaZAXlOBIuGtYFKJoZAUt5eDQsd6mzRchirU2iYLtLur79an37HupARnKkf5nF9iWbGt1NRkb3dpZC0O84hFpRoQZBOH6rsRiqLAVDtawtyRJyoAr5YgSsl0QZDZD"  // Metro - The Game (aggiornato con token funzionante)
   };
   
   // Informazioni statiche delle pagine
@@ -182,6 +182,7 @@ const FacebookData = () => {
   
   // Token corrente basato sulla pagina selezionata
   const [currentToken, setCurrentToken] = useState<string>(pageTokens[currentPageId] || "");
+  const [customToken, setCustomToken] = useState<string>("");
   const { toast } = useToast();
   
   // Moderation actions
@@ -518,8 +519,8 @@ const FacebookData = () => {
 
   // Fetch data from Facebook
   const fetchPageData = async (pageId = currentPageId, accessToken?: string) => {
-    // Utilizzo token specifico per la pagina se non viene fornito un token
-    const effectiveToken = accessToken || pageTokens[pageId] || currentToken;
+    // Utilizzo token specifico per la pagina, o il token corrente se esiste, o il token dalla mappa
+    const effectiveToken = accessToken || currentToken || pageTokens[pageId];
     
     // Check if we have cached data for this page
     if (pagesCache[pageId]) {
@@ -899,6 +900,73 @@ const FacebookData = () => {
                   <CardTitle className="text-sm">Richiesta Graph API utilizzata</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  <div className="mb-4">
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="text"
+                        placeholder="Inserisci token personalizzato"
+                        value={customToken}
+                        onChange={(e) => setCustomToken(e.target.value)}
+                        className="flex-1 px-3 py-2 border rounded text-sm"
+                      />
+                      <Button 
+                        onClick={() => {
+                          if (!customToken) {
+                            toast({
+                              title: "Errore",
+                              description: "Inserisci un token valido",
+                              variant: "destructive"
+                            });
+                            return;
+                          }
+                          // Aggiorna il token corrente
+                          setCurrentToken(customToken);
+                          // Aggiorna anche il token nella mappa
+                          pageTokens[currentPageId] = customToken;
+                          
+                          toast({
+                            title: "Token aggiornato",
+                            description: `Token personalizzato impostato per ${pageInfo[currentPageId]?.name || currentPageId}`,
+                          });
+                          
+                          // Rimuovi la pagina dalla cache per forzare il nuovo caricamento
+                          setPagesCache(prevCache => {
+                            const newCache = {...prevCache};
+                            delete newCache[currentPageId];
+                            return newCache;
+                          });
+                        }}
+                        size="sm"
+                      >
+                        Imposta Token
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          // Usa il token come settato nella configurazione
+                          const defaultToken = pageTokens[currentPageId] || "";
+                          setCurrentToken(defaultToken);
+                          setCustomToken("");
+                          
+                          toast({
+                            title: "Token ripristinato",
+                            description: "Utilizzo il token predefinito",
+                          });
+                        }}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Ripristina
+                      </Button>
+                    </div>
+                    <Button 
+                      onClick={() => fetchPageData()} 
+                      className="w-full"
+                      variant="secondary"
+                    >
+                      Carica con Token Corrente
+                    </Button>
+                  </div>
+                  
                   <div className="bg-gray-100 p-3 rounded text-xs overflow-x-auto">
                     <pre className="whitespace-pre-wrap">{`curl -i -X GET "https://graph.facebook.com/v22.0/${currentPageId}?fields=id,name,about,bio,category,category_list,description,fan_count,followers_count,website,picture.type(large),published_posts.limit(10){id,created_time,updated_time,full_picture,permalink_url,from{id,name,picture},message,message_tags,likes.summary(true),comments.summary(true){id,from{id,name,picture},like_count,is_hidden,created_time,message},reactions.summary(true),shares,is_hidden}&access_token=${currentToken}"`}</pre>
                   </div>
