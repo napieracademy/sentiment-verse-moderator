@@ -29,7 +29,7 @@ const FacebookSDK: React.FC<FacebookSDKProps> = ({ onSDKLoaded }) => {
     // Initialize the SDK once it's loaded
     window.fbAsyncInit = function() {
       window.FB.init({
-        appId: '1375072630194093', // Updated App ID as specified by the user
+        appId: '1244095920468498', // Updated App ID
         cookie: true,
         xfbml: true,
         version: 'v18.0'
@@ -49,4 +49,3 @@ const FacebookSDK: React.FC<FacebookSDKProps> = ({ onSDKLoaded }) => {
 };
 
 export default FacebookSDK;
-
