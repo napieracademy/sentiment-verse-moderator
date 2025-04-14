@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,8 +8,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { Facebook } from "lucide-react";
 
 type LoginModalProps = {
   open: boolean;
@@ -89,51 +90,24 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
                 </svg>
               </div>
               
-              {/* Real Facebook Login Button */}
-              <div className="flex justify-center">
+              {/* Use Facebook SDK button */}
+              <div className="flex justify-center mb-4">
                 <Button 
                   onClick={handleFacebookLogin} 
                   disabled={loading}
-                  className="fb-button flex items-center justify-center w-full bg-facebook text-white hover:bg-facebook/90"
+                  className="fb-button flex items-center justify-center w-full"
                 >
+                  <Facebook className="mr-2" />
                   {loading ? "Caricamento..." : "Continua con Facebook"}
                 </Button>
               </div>
               
-              {/* Alternative login form - kept for design consistency */}
-              <div className="mt-4 text-center">
-                <p className="text-sm text-gray-500 mb-4">Oppure accedi direttamente</p>
-                <div className="grid w-full items-center gap-3">
-                  <input 
-                    type="email"
-                    placeholder="Email o numero di telefono"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  />
-                  <input 
-                    type="password"
-                    placeholder="Password"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  />
-                </div>
-                
-                <Button 
-                  onClick={handleFacebookLogin} 
-                  className="w-full fb-button mt-3"
-                >
-                  Accedi
-                </Button>
-                
-                <div className="text-center text-sm text-muted-foreground mt-2">
-                  <a href="#" className="text-facebook hover:underline">Password dimenticata?</a>
-                </div>
-                
-                <hr className="my-4" />
-                
-                <div className="text-center">
-                  <Button variant="outline" className="bg-green-600 text-white hover:bg-green-700">
-                    Crea nuovo account
-                  </Button>
-                </div>
+              {/* Facebook brand disclaimer */}
+              <div className="text-xs text-center text-gray-500 mt-4">
+                <p>
+                  Accedendo, accetti i nostri Termini di Servizio e la nostra Informativa sulla Privacy.
+                  Non pubblicheremo nulla sul tuo profilo Facebook senza la tua autorizzazione.
+                </p>
               </div>
             </>
           ) : (

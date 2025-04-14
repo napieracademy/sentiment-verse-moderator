@@ -11,15 +11,25 @@ declare global {
 
 const FacebookSDK: React.FC = () => {
   useEffect(() => {
-    // The SDK will call window.fbAsyncInit when it's loaded
-    const originalFBAsyncInit = window.fbAsyncInit;
-    
+    // Load the SDK asynchronously
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "https://connect.facebook.net/it_IT/sdk.js";
+      fjs.parentNode?.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+    // Initialize the SDK once it's loaded
     window.fbAsyncInit = function() {
-      if (originalFBAsyncInit) {
-        originalFBAsyncInit();
-      }
+      window.FB.init({
+        appId: '1053122852654812',
+        cookie: true,
+        xfbml: true,
+        version: 'v18.0'
+      });
       
-      // Add any additional initialization code here
+      window.FB.AppEvents.logPageView();
       console.log('Facebook SDK initialized');
     };
   }, []);

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import LoginModal from "@/components/LoginModal";
 import FacebookSDK from "@/components/FacebookSDK";
+import { Facebook } from "lucide-react";
 
 const Index = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -43,6 +44,7 @@ const Index = () => {
             onClick={handleFacebookLoginClick}
             className="fb-button"
           >
+            <Facebook className="mr-2" size={18} />
             Accedi con Facebook
           </Button>
         </div>
@@ -61,10 +63,11 @@ const Index = () => {
             </p>
             <div className="pt-4">
               <Button
-                onClick={() => setIsLoginModalOpen(true)}
+                onClick={handleFacebookLoginClick}
                 size="lg"
-                className="fb-button"
+                className="fb-button flex items-center"
               >
+                <Facebook className="mr-2" />
                 Inizia Ora
               </Button>
             </div>
@@ -279,8 +282,9 @@ const Index = () => {
             onClick={handleFacebookLoginClick}
             size="lg"
             variant="outline"
-            className="bg-white text-facebook hover:bg-gray-100"
+            className="bg-white text-facebook hover:bg-gray-100 flex items-center justify-center"
           >
+            <Facebook className="mr-2" />
             Inizia Gratuitamente
           </Button>
         </div>
