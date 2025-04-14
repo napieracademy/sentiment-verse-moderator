@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +17,8 @@ type LoginModalProps = {
   onOpenChange: (open: boolean) => void;
 };
 
+const TERMS_OF_SERVICE_URL = "https://sentimentverse.com/terms-of-service";
+
 const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
   const [step, setStep] = useState<'login' | 'permissions'>('login');
   const [loading, setLoading] = useState(false);
@@ -26,12 +27,10 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Check if we're coming back from a redirect with an access token
   useEffect(() => {
     if (window.FB && open) {
       window.FB.getLoginStatus(function(response: any) {
         if (response.status === 'connected') {
-          // User is logged in and has authenticated the app
           fetchUserData(response.authResponse);
         }
       });
@@ -81,7 +80,6 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
   };
 
   const handlePermissionGrant = () => {
-    // Store authentication data in localStorage for persistence between page visits
     if (userData) {
       localStorage.setItem('fbUserData', JSON.stringify(userData));
       localStorage.setItem('fbAuthTimestamp', new Date().toISOString());
@@ -114,7 +112,6 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
                 </svg>
               </div>
               
-              {/* Use Facebook SDK button */}
               <div className="flex justify-center mb-4">
                 <Button 
                   onClick={handleFacebookLogin} 
@@ -126,10 +123,23 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
                 </Button>
               </div>
               
-              {/* Facebook brand disclaimer */}
               <div className="text-xs text-center text-gray-500 mt-4">
                 <p>
-                  Accedendo, accetti i nostri Termini di Servizio e la nostra Informativa sulla Privacy.
+                  Accedendo, accetti i nostri <a 
+                    href={TERMS_OF_SERVICE_URL} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-facebook hover:underline"
+                  >
+                    Termini di Servizio
+                  </a> e la nostra <a 
+                    href={TERMS_OF_SERVICE_URL} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-facebook hover:underline"
+                  >
+                    Informativa sulla Privacy
+                  </a>.
                   Non pubblicheremo nulla sul tuo profilo Facebook senza la tua autorizzazione.
                 </p>
               </div>
