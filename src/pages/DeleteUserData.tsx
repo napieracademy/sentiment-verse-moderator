@@ -36,27 +36,9 @@ const DeleteUserData: React.FC = () => {
         console.log(`Eliminazione dati per l'utente Facebook ID: ${userId}`);
         console.log(`Codice di conferma: ${confirmCode}`);
         
-        // Se in futuro ci saranno dati su Supabase associati all'utente Facebook,
-        // qui potrai aggiungere il codice per eliminarli
-        // Ad esempio:
-        // await supabase
-        //   .from('user_profiles')
-        //   .delete()
-        //   .eq('facebook_user_id', userId);
+        // In questa versione non memorizziamo dati degli utenti su Supabase
+        // quindi non c'è bisogno di eliminare dati dal database
         
-        // Opzionalmente, puoi anche registrare la deautorizzazione in un log su Supabase
-        await supabase
-          .from('deauth_log')
-          .insert({
-            facebook_user_id: userId,
-            confirmation_code: confirmCode,
-            deauth_date: new Date().toISOString(),
-          })
-          .catch(err => {
-            // Se la tabella non esiste ancora, non bloccare il flusso
-            console.log('Errore nel log della deautorizzazione:', err);
-          });
-          
         setStatus("success");
         toast({
           title: "Eliminazione completata",
