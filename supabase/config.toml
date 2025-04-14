@@ -1,5 +1,5 @@
 
 project_id = "prjxycapfsjjvxdzgkmp"
 
-[functions.facebook-deauthorize]
-verify_jwt = false
+[functions.fetch-facebook-pages]
+verify_jwt = true

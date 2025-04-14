@@ -28,6 +28,7 @@ interface FacebookPage {
     city: string;
     country: string;
   };
+  access_token?: string; // Token di accesso per la pagina
 }
 
 const PageData = () => {
@@ -54,13 +55,65 @@ const PageData = () => {
       return;
     }
 
-    // Nessun dato mock. L'app utilizzerà solo dati reali quando si implementeranno
-    // le chiamate alle API di Facebook tramite Supabase Edge Functions
-    setLoading(false);
+    try {
+      // Recupera il token di accesso di Facebook dall'autenticazione di Supabase
+      const providerToken = session.provider_token;
+      
+      if (!providerToken) {
+        toast({
+          title: "Token mancante",
+          description: "Non è stato possibile recuperare il token di accesso di Facebook.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+      
+      // Chiamata a un'edge function di Supabase per recuperare le pagine di Facebook
+      const { data, error } = await supabase.functions.invoke('fetch-facebook-pages', {
+        body: { accessToken: providerToken }
+      });
+      
+      if (error) {
+        console.error("Errore nella chiamata all'edge function:", error);
+        toast({
+          title: "Errore",
+          description: "Non è stato possibile recuperare le pagine Facebook.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+      
+      if (data && data.pages && data.pages.length > 0) {
+        setPages(data.pages);
+        setSelectedPage(data.pages[0]);
+        
+        // Salva il token di accesso della pagina per usarlo nelle chiamate successive
+        if (data.pages[0].access_token) {
+          localStorage.setItem('pageAccessToken', data.pages[0].access_token);
+        }
+      }
+      
+      setLoading(false);
+    } catch (error) {
+      console.error("Errore durante il recupero delle pagine:", error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante il recupero delle pagine Facebook.",
+        variant: "destructive"
+      });
+      setLoading(false);
+    }
   };
 
   const handleSelectPage = (page: FacebookPage) => {
     setSelectedPage(page);
+    
+    // Salva il token di accesso della pagina selezionata
+    if (page.access_token) {
+      localStorage.setItem('pageAccessToken', page.access_token);
+    }
   };
 
   const handleGoToDashboard = () => {
