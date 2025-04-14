@@ -37,6 +37,7 @@ const App = () => (
           <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/facebook/deauthorize" element={<Deauthorize />} />
           <Route path="/deletion_status" element={<DeletionStatus />} />
+          <Route path="/facebook/deletion_status" element={<DeletionStatus />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
