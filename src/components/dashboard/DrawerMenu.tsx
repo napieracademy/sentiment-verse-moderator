@@ -34,9 +34,7 @@ const DrawerMenu = ({ activeTab, setActiveTab }: DrawerMenuProps) => {
   // Array delle pagine principali per la navigazione
   const navigationItems = [
     { path: "/", label: "Home", icon: Home },
-    { path: "/facebook-data", label: "Facebook Data", icon: Database },
-    { path: "/page-data", label: "Page Data", icon: MessageSquare },
-    { path: "/dashboard", label: "Dashboard", icon: BarChart2 }
+    { path: "/facebook-data", label: "Facebook Data", icon: Database }
   ];
   
   // Add border effect when menu is open

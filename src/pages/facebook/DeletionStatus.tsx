@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import Footer from '@/components/dashboard/Footer';
 
 const DeletionStatus: React.FC = () => {
   const { toast } = useToast();
@@ -51,8 +50,7 @@ const DeletionStatus: React.FC = () => {
   }, [toast]);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="container mx-auto px-4 py-8 flex-grow">
+    <div className="container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto mt-16 p-6 bg-white rounded-lg shadow-md">
           <h1 className="text-2xl font-bold text-center mb-6">Stato Cancellazione Dati</h1>
           
@@ -120,8 +118,6 @@ const DeletionStatus: React.FC = () => {
             </p>
           </div>
         </div>
-      </div>
-      <Footer />
     </div>
   );
 };

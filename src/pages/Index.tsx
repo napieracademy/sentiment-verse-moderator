@@ -2,8 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Facebook } from "lucide-react";
-import Header from "@/components/dashboard/Header";
-import Footer from "@/components/dashboard/Footer";
 import { handleFacebookLogin } from "@/components/FacebookSDK";
 import { useToast } from "@/hooks/use-toast";
 
@@ -23,7 +21,6 @@ const Index: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
       <main className="flex-1 container mx-auto px-4 py-16 flex flex-col items-center justify-center space-y-8">
         <div className="text-center space-y-4 max-w-2xl">
           <h1 className="text-4xl font-bold">Dati Reali Facebook</h1>
@@ -55,7 +52,6 @@ const Index: React.FC = () => {
           </p>
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

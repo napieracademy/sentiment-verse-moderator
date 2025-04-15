@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Header from "@/components/dashboard/Header";
-import Footer from "@/components/dashboard/Footer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -775,7 +773,6 @@ const FacebookData = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
       
       <main className="flex-1 p-6 bg-gray-50">
         <div className="container mx-auto space-y-6">
@@ -1389,7 +1386,6 @@ const FacebookData = () => {
         </div>
       </main>
       
-      <Footer />
     </div>
   );
 };

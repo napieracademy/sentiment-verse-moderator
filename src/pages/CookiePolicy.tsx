@@ -1,10 +1,8 @@
 import React from 'react';
-import Footer from '@/components/dashboard/Footer';
 
 const CookiePolicy: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="container mx-auto px-4 py-8 flex-grow">
+    <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Cookie Policy</h1>
           
@@ -110,8 +108,6 @@ const CookiePolicy: React.FC = () => {
             <p className="text-sm italic">Ultima modifica: 14 Aprile 2025</p>
           </div>
         </div>
-      </div>
-      <Footer />
     </div>
   );
 };
