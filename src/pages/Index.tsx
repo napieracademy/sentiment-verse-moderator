@@ -20,38 +20,37 @@ const Index: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <main className="flex-1 container mx-auto px-4 py-16 flex flex-col items-center justify-center space-y-8">
-        <div className="text-center space-y-4 max-w-2xl">
-          <h1 className="text-4xl font-bold">Dati Reali Facebook</h1>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center w-full max-w-3xl">
+      <div className="flex justify-center">
+        <img 
+          src="/gatto_analyst.png" 
+          alt="Gatto Calcolatore" 
+          className="w-full max-w-sm h-auto object-contain"
+        />
+      </div>
+
+      <div className="flex flex-col items-start space-y-6">
+        <div className="space-y-4">
+          <h1 className="text-4xl font-bold">SentimentVers!</h1>
           <p className="text-xl text-muted-foreground">
-            Questa applicazione mostra solo i dati reali delle tue pagine Facebook,
-            senza utilizzare dati di esempio o simulazioni.
+            Modera e analizza i commenti delle tue pagine social con la potenza dell'intelligenza artificiale.
           </p>
         </div>
         
-        <div className="flex flex-col items-center space-y-4">
-          <Button size="lg" asChild>
-            <Link to="/facebook-data">
-              Visualizza Dati Pagine Facebook
-            </Link>
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            size="lg" 
-            className="flex items-center gap-2 border-facebook text-facebook hover:bg-facebook/10"
-            onClick={handleLogin}
-          >
-            <Facebook size={18} />
-            Accedi con Facebook
-          </Button>
-          
-          <p className="text-sm text-muted-foreground">
-            Accedi con Facebook per vedere i dati reali delle tue pagine
-          </p>
-        </div>
-      </main>
+        <Button 
+          variant="default"
+          size="lg" 
+          className="flex items-center gap-2 bg-black text-white hover:bg-gray-800"
+          onClick={handleLogin}
+        >
+          <Facebook size={18} />
+          Accedi con Facebook
+        </Button>
+        
+        <p className="text-sm text-muted-foreground">
+          Accedi con Facebook per vedere i dati reali delle tue pagine
+        </p>
+      </div>
     </div>
   );
 };

@@ -16,6 +16,8 @@ import CookiePolicy from "./pages/CookiePolicy";
 import Deauthorize from "./pages/facebook/Deauthorize";
 import DeletionStatus from "./pages/facebook/DeletionStatus";
 import Insights from "./pages/Insights";
+import PostInsights from "./pages/PostInsights";
+import Welcome from "./pages/Welcome";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +38,8 @@ const App = () => (
           <Route path="/deletion_status" element={<Layout><DeletionStatus /></Layout>} />
           <Route path="/facebook/deletion_status" element={<Layout><DeletionStatus /></Layout>} />
           <Route path="/insights" element={<Layout><Insights /></Layout>} />
+          <Route path="/post-insights" element={<Layout><PostInsights /></Layout>} />
+          <Route path="/welcome" element={<Layout><Welcome /></Layout>} />
           <Route path="*" element={<Layout><NotFound /></Layout>} />
         </Routes>
         <Toaster />

@@ -91,22 +91,25 @@ const Insights: React.FC = () => {
   // Funzione per recuperare gli insight con date specifiche
   const fetchInsightsWithDateRange = useCallback(async (dateRange: { from: Date, to?: Date }, period: string = 'day') => {
     if (!dateRange.from || !dateRange.to) return;
-    
+
     setLoading(true);
     setError(null);
-    
+    // Pulisci i dati precedenti prima di un nuovo fetch per evitare di mostrare dati vecchi in caso di errore
+    setData(null); 
+    setRawResponse(null);
+
     try {
       const pageId = "121428567930871"; // ID fisso per Te la do io Firenze
       const since = formatDateForApi(dateRange.from);
       const until = formatDateForApi(dateRange.to);
-      
+
       console.log(`Recupero dati dal ${since} al ${until} con periodo ${period}`);
-      
+
       // Utilizzo i parametri since e until per specificare il range di date
       const url = `https://graph.facebook.com/v19.0/${pageId}/insights?metric=page_impressions,page_impressions_unique,page_views_total,page_fans,page_fan_adds,page_fan_removes,page_post_engagements,page_video_views&period=${period}&since=${since}&until=${until}&access_token=${token}`;
-      
+
       console.log("Chiamata API:", url.substring(0, url.indexOf("access_token=") + 13) + "***TOKEN***");
-      
+
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -116,7 +119,7 @@ const Insights: React.FC = () => {
 
       const json = await response.json();
       setRawResponse(json);
-      
+
       // Se la risposta ha una proprietà 'data', estrai le metriche
       if (json.data && Array.isArray(json.data)) {
         const metrics = json.data.map((metric: FacebookMetric) => ({
@@ -124,55 +127,26 @@ const Insights: React.FC = () => {
           description: metricDescriptions[metric.name] || "Nessuna descrizione disponibile"
         }));
         setData(metrics);
-        
+
         toast({
           title: "Dati insights caricati",
           description: `Caricate ${metrics.length} metriche da Facebook per il periodo selezionato`,
         });
       } else {
-        throw new Error("Formato della risposta non valido");
+        // Se json.data non è un array valido, consideralo un errore o dati vuoti
+        setData([]); // Imposta dati vuoti invece di lanciare errore se la struttura non è quella attesa
+        console.warn("Formato della risposta API non conteneva un array 'data'.", json);
+        toast({
+          title: "Dati parziali o non validi",
+          description: "La risposta API non conteneva i dati attesi.",
+          variant: "default" // Usiamo default invece di destructive
+        });
       }
     } catch (e: any) {
       setError(e.message);
-      toast({ title: "Errore", description: e.message, variant: "destructive" });
-      
-      // Fallback per i dati base come nell'implementazione originale
-      try {
-        const pageId = "121428567930871";
-        const basicUrl = `https://graph.facebook.com/v19.0/${pageId}?fields=id,name,fan_count,followers_count&access_token=${token}`;
-        
-        const basicResponse = await fetch(basicUrl);
-        if (basicResponse.ok) {
-          const basicData = await basicResponse.json();
-          setRawResponse(basicData);
-          // Crea metriche base
-          const simulatedMetrics = [
-            {
-              name: "page_fans",
-              period: "lifetime",
-              values: [{ value: basicData.fan_count || 0, end_time: new Date().toISOString() }],
-              title: "Fan della pagina",
-              description: "Numero totale di 'Mi piace' alla Pagina",
-              id: "page_fans"
-            },
-            {
-              name: "page_followers",
-              period: "lifetime",
-              values: [{ value: basicData.followers_count || 0, end_time: new Date().toISOString() }],
-              title: "Follower della pagina",
-              description: "Numero totale di follower della Pagina",
-              id: "page_followers"
-            }
-          ];
-          setData(simulatedMetrics);
-          toast({
-            title: "Dati base caricati",
-            description: "Non è stato possibile caricare gli insights completi. Sono stati caricati solo i dati base della pagina."
-          });
-        }
-      } catch (backupError) {
-        console.error("Anche il fallback è fallito:", backupError);
-      }
+      toast({ title: "Errore API", description: e.message, variant: "destructive" });
+      setData(null); // Assicura che i dati siano nulli in caso di errore completo
+      // Rimosso il blocco di fallback che recuperava dati base e generava metriche simulate.
     } finally {
       setLoading(false);
     }
@@ -204,94 +178,100 @@ const Insights: React.FC = () => {
     return num.toString();
   };
 
-  // Prepara i dati per InsightsPanel
-  const prepareInsightsData = () => {
-    if (!data) return null;
+  // Prepara i dati per InsightsPanel usando SOLO dati reali dall'API
+  const prepareRealInsightsData = () => {
+    if (!data) {
+      // Se non ci sono dati (fetch iniziale fallito o in corso), ritorna una struttura vuota
+      return {
+        currentFollowers: 0,
+        followerGrowthPercentage: "0.0",
+        totalEngagement: 0,
+        totalReach: 0,
+        totalFanAdds: 0,
+        totalFanRemoves: 0,
+        totalPageViews: 0,
+        growthData: [],
+        totalEngagementData: [],
+        totalReachData: [],
+        videoViewsData: [],
+        uniqueReachData: [],
+        pageViewsData: [],
+        fanAddsData: [],
+        fanRemovesData: [],
+      };
+    }
+
+    // Estrai le metriche specifiche
+    const followersMetric = data.find(m => m.name === "page_fans");
+    const engagementMetric = data.find(m => m.name === "page_post_engagements");
+    const reachMetric = data.find(m => m.name === "page_impressions");
+    const videoViewsMetric = data.find(m => m.name === "page_video_views");
+    // Nuove metriche da estrarre
+    const uniqueReachMetric = data.find(m => m.name === "page_impressions_unique");
+    const pageViewsMetric = data.find(m => m.name === "page_views_total");
+    const fanAddsMetric = data.find(m => m.name === "page_fan_adds");
+    const fanRemovesMetric = data.find(m => m.name === "page_fan_removes");
+
+    // Ultimo valore disponibile per le metriche chiave
+    const currentFollowers = followersMetric?.values?.[followersMetric.values.length - 1]?.value || 0;
+    const totalEngagement = engagementMetric?.values?.[engagementMetric.values.length - 1]?.value || 0;
+    const totalReach = reachMetric?.values?.[reachMetric.values.length - 1]?.value || 0;
+
+    // Prepara i dati per i grafici (serie temporali)
+    const formatDataForChart = (metric: FacebookMetric | undefined) => {
+      return metric?.values
+        ?.slice(-90) // Massimo 90 punti dati
+        .map(v => ({
+          // Assicurati che end_time sia una data valida prima di formattarla
+          name: v.end_time ? new Date(v.end_time).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' }) : 'N/D',
+          value: v.value
+        })) || [];
+    };
     
-    // Estrai dati dai metrics per creare i dataset necessari per InsightsPanel
-    const followers = data.find(m => m.name === "page_fans")?.values[0]?.value || 0;
-    const growthData = data
-      .filter(m => m.name === "page_fans" && m.values.length > 0)
-      .flatMap(m => m.values.slice(0, 14).reverse().map((v, i) => ({
-        name: new Date(v.end_time).toLocaleDateString('it-IT', {day: '2-digit', month: '2-digit'}),
-        followers: v.value
-      })));
-    
-    const engagementData = data
-      .filter(m => m.name === "page_post_engagements" && m.values.length > 0)
-      .flatMap(m => m.values.slice(0, 14).reverse().map((v, i) => ({
-        name: new Date(v.end_time).toLocaleDateString('it-IT', {day: '2-digit', month: '2-digit'}),
-        comments: Math.floor(v.value * 0.3), // Stima per divisione tra commenti e reazioni
-        reactions: Math.floor(v.value * 0.7)
-      })));
-    
-    // Calcola percentuale di crescita
-    const oldestFollowers = growthData.length > 0 ? growthData[0]?.followers || 0 : 0;
-    const newestFollowers = growthData.length > 0 ? growthData[growthData.length - 1]?.followers || 0 : 0;
-    const followerGrowthPercentage = oldestFollowers > 0 
-      ? ((newestFollowers - oldestFollowers) / oldestFollowers * 100).toFixed(1)
-      : "0.0";
-    
-    // Dati demografici di esempio
-    const demographicsData = [
-      { name: "18-24", value: 25 },
-      { name: "25-34", value: 40 },
-      { name: "35-44", value: 20 },
-      { name: "45-54", value: 10 },
-      { name: "55+", value: 5 }
-    ];
-    
-    // Dati di localizzazione di esempio
-    const locationData = [
-      { name: "Firenze", value: 45 },
-      { name: "Prato", value: 15 },
-      { name: "Pistoia", value: 12 },
-      { name: "Siena", value: 10 },
-      { name: "Altri", value: 18 }
-    ];
-    
-    // Dati sentiment di esempio
-    const sentimentTrend = [
-      { date: "09/04", positive: 35, negative: 15, neutral: 10 },
-      { date: "10/04", positive: 30, negative: 20, neutral: 15 },
-      { date: "11/04", positive: 40, negative: 10, neutral: 12 },
-      { date: "12/04", positive: 25, negative: 25, neutral: 15 },
-      { date: "13/04", positive: 45, negative: 12, neutral: 10 },
-      { date: "14/04", positive: 38, negative: 14, neutral: 18 },
-      { date: "15/04", positive: 42, negative: 16, neutral: 14 }
-    ];
-    
-    // Calcola engagement e reach
-    const totalEngagement = data.find(m => m.name === "page_post_engagements")?.values[0]?.value || 0;
-    const reach = data.find(m => m.name === "page_impressions")?.values[0]?.value || 0;
-    const uniqueReach = data.find(m => m.name === "page_impressions_unique")?.values[0]?.value || 0;
-    
-    // Calcola metriche derivate
-    const totalComments = Math.floor(totalEngagement * 0.3);
-    const totalReactions = Math.floor(totalEngagement * 0.7);
-    const averageEngagementRate = followers > 0 
-      ? ((totalEngagement / followers) * 100).toFixed(1) 
-      : "0.0";
-    
+    const growthData = formatDataForChart(followersMetric);
+    const totalEngagementData = formatDataForChart(engagementMetric);
+    const totalReachData = formatDataForChart(reachMetric);
+    const videoViewsData = formatDataForChart(videoViewsMetric);
+    // Nuovi dati per grafici
+    const uniqueReachData = formatDataForChart(uniqueReachMetric);
+    const pageViewsData = formatDataForChart(pageViewsMetric);
+    const fanAddsData = formatDataForChart(fanAddsMetric);
+    const fanRemovesData = formatDataForChart(fanRemovesMetric);
+
+    // Calcola percentuale di crescita follower (solo se ci sono almeno 2 punti dati)
+    let followerGrowthPercentage = "0.0";
+    if (growthData.length >= 2) {
+      const oldestFollowers = growthData[0]?.value || 0; // Usa 'value' ora
+      const newestFollowers = growthData[growthData.length - 1]?.value || 0; // Usa 'value' ora
+      if (oldestFollowers > 0) {
+        followerGrowthPercentage = ((newestFollowers - oldestFollowers) / oldestFollowers * 100).toFixed(1);
+      }
+    }
+
+    // Calcola somme per nuove metriche chiave (se dati presenti)
+    const totalFanAdds = fanAddsMetric?.values?.reduce((sum, v) => sum + v.value, 0) || 0;
+    const totalFanRemoves = fanRemovesMetric?.values?.reduce((sum, v) => sum + v.value, 0) || 0;
+    const totalPageViews = pageViewsMetric?.values?.reduce((sum, v) => sum + v.value, 0) || 0;
+
     return {
-      growthData: growthData.length > 0 ? growthData : Array(14).fill(0).map((_, i) => ({ 
-        name: new Date(Date.now() - (13-i) * 86400000).toLocaleDateString('it-IT', {day: '2-digit', month: '2-digit'}),
-        followers: 5000 + Math.floor(Math.random() * 200) 
-      })),
-      engagementData: engagementData.length > 0 ? engagementData : Array(14).fill(0).map((_, i) => ({
-        name: new Date(Date.now() - (13-i) * 86400000).toLocaleDateString('it-IT', {day: '2-digit', month: '2-digit'}),
-        comments: Math.floor(Math.random() * 50),
-        reactions: Math.floor(Math.random() * 150)
-      })),
-      demographicsData,
-      locationData,
-      sentimentTrend,
+      currentFollowers,
       followerGrowthPercentage,
-      totalComments,
-      totalReactions,
-      averageEngagementRate,
-      totalReach: reach,
-      reachGrowth: 4.2 // esempio fisso
+      totalEngagement,
+      totalReach,
+      // Nuove metriche aggregate
+      totalFanAdds,
+      totalFanRemoves,
+      totalPageViews,
+      // Dati per grafici
+      growthData, 
+      totalEngagementData, 
+      totalReachData, 
+      videoViewsData, 
+      // Nuovi dati per grafici
+      uniqueReachData,
+      pageViewsData,
+      fanAddsData,
+      fanRemovesData,
     };
   };
 
@@ -344,37 +324,49 @@ const Insights: React.FC = () => {
           </Button>
         </div>
 
-        {error && (
-          <Card className="mb-4 border-yellow-200 bg-yellow-50">
+        {error && !data && ( // Mostra errore bloccante solo se non ci sono dati precedenti
+          <Card className="mb-4 border-red-200 bg-red-50">
+             <CardHeader>
+                 <CardTitle className="text-red-700">Errore nel caricamento</CardTitle>
+             </CardHeader>
             <CardContent className="p-4">
-              <p className="text-yellow-700">
-                Avviso: {error}
-                <br />
-                Alcuni dati potrebbero non essere disponibili. Vengono mostrate solo le metriche accessibili.
+              <div className="text-red-600 font-medium">{error}</div>
+              <p className="mt-2 mb-4 text-sm text-red-700">
+                Impossibile caricare i dati degli insights. Verifica la connessione, il token di accesso o le autorizzazioni della pagina.
               </p>
+              <Button onClick={fetchInsights} className="mt-2">
+                Riprova
+              </Button>
             </CardContent>
           </Card>
         )}
 
-        {/* Componente InsightsPanel avanzato con collegamento alle funzioni di date e caricamento */}
-        <InsightsPanel 
-          data={prepareInsightsData() || {
-            growthData: [],
-            engagementData: [],
-            demographicsData: [],
-            locationData: [],
-            sentimentTrend: [],
-            followerGrowthPercentage: "0.0",
-            totalComments: 0,
-            totalReactions: 0,
-            averageEngagementRate: "0.0",
-            totalReach: 0,
-            reachGrowth: 0
-          }} 
+        {error && data && ( // Mostra avviso se c'è un errore ma dati (anche vecchi) sono presenti
+             <Card className="mb-4 border-yellow-200 bg-yellow-50">
+                <CardContent className="p-4">
+                    <p className="text-yellow-700 text-sm">
+                    Avviso durante l'aggiornamento: {error}
+                    <br />
+                    Potrebbero essere visualizzati dati non aggiornati.
+                    </p>
+                </CardContent>
+             </Card>
+         )}
+
+        {/* Componente InsightsPanel avanzato */}
+        {/* Passiamo i dati reali preparati */}
+        {/* Dovrà essere modificato per visualizzare i nuovi grafici/metriche */}
+        <InsightsPanel
+          data={prepareRealInsightsData()}
+          selectedTimeRange={selectedTimeRange}
+          selectedDateRange={selectedDateRange}
+          isCustomDateActive={isCustomDateActive}
           onDateRangeChange={(range) => {
-            setSelectedDateRange(range);
-            setIsCustomDateActive(true);
-            fetchInsightsWithDateRange(range);
+            if (range?.from) {
+              setSelectedDateRange(range);
+              setIsCustomDateActive(true);
+              fetchInsightsWithDateRange(range);
+            }
           }}
           onTimeRangeChange={(range) => {
             setSelectedTimeRange(range);

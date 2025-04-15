@@ -20,8 +20,8 @@ const FacebookCallback: React.FC = () => {
             description: "Accesso con Facebook completato con successo.",
           });
           
-          // Redirect to facebook data
-          navigate('/facebook-data');
+          // Redirect to the new welcome page
+          navigate('/welcome');
         } else {
           toast({
             title: "Errore di autenticazione",

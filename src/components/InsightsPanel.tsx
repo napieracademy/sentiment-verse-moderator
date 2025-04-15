@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
@@ -21,128 +20,175 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { 
-  BarChart, LineChart, PieChart, ResponsiveContainer, 
-  Bar, Line, Pie, XAxis, YAxis, CartesianGrid, 
-  Tooltip as RechartsTooltip, Legend, Cell
+  LineChart, BarChart, ResponsiveContainer, 
+  Line, Bar, XAxis, YAxis, CartesianGrid, 
+  Tooltip as RechartsTooltip, Legend
 } from 'recharts';
 import { 
-  ArrowUpRight, ArrowDownRight, Users, MessageSquare, Eye,
-  BarChart2, Download, TrendingUp, FileText, HelpCircle, Info,
-  Filter, MoreHorizontal, DownloadCloud, FileSpreadsheet, Share2, RefreshCcw
+  ArrowUpRight, ArrowDownRight, Users, Eye, BarChart2,
+  Download, TrendingUp, Info, HelpCircle,
+  Filter, MoreHorizontal, DownloadCloud, FileSpreadsheet, Share2, RefreshCcw, Video
 } from 'lucide-react';
 
-// Tipi per i dati reali
-export interface InsightsData {
-  growthData: Array<{ name: string; followers: number }>;
-  engagementData: Array<{ name: string; comments: number; reactions: number }>;
-  demographicsData: Array<{ name: string; value: number }>;
-  locationData: Array<{ name: string; value: number }>;
-  sentimentTrend: Array<{ date: string; positive: number; negative: number; neutral: number }>;
+// Interfaccia aggiornata per i dati reali ricevuti da Insights.tsx
+export interface RealInsightsData {
+  currentFollowers: number;
   followerGrowthPercentage: string;
-  totalComments: number;
-  totalReactions: number;
-  averageEngagementRate: string;
+  totalEngagement: number;
   totalReach: number;
-  reachGrowth: number;
+  totalFanAdds: number;
+  totalFanRemoves: number;
+  totalPageViews: number;
+  growthData: Array<{ name: string; value: number }>; // Nome generico 'value'
+  totalEngagementData: Array<{ name: string; value: number }>; // Nome generico 'value'
+  totalReachData: Array<{ name: string; value: number }>; // Nome generico 'value'
+  videoViewsData: Array<{ name: string; value: number }>; // Aggiunto video views
+  uniqueReachData: Array<{ name: string; value: number }>;
+  pageViewsData: Array<{ name: string; value: number }>;
+  fanAddsData: Array<{ name: string; value: number }>;
+  fanRemovesData: Array<{ name: string; value: number }>;
 }
 
 interface InsightsPanelProps {
-  data: InsightsData;
-  onDateRangeChange?: (range: { from: Date; to?: Date }) => void;
-  onTimeRangeChange?: (range: string) => void;
-  isLoadingData?: boolean;
+  data: RealInsightsData; // Usa la nuova interfaccia
+  // Nuove props per ricevere lo stato dal padre
+  selectedTimeRange: string;
+  selectedDateRange: { from: Date; to?: Date };
+  isCustomDateActive: boolean;
+  // Callbacks per comunicare le modifiche al padre
+  onDateRangeChange: (range: { from: Date; to?: Date }) => void; // R reso obbligatorio
+  onTimeRangeChange: (range: string) => void; // Reso obbligatorio
+  isLoadingData?: boolean; 
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
+// Componente helper per visualizzare grafici o messaggio "Nessun dato"
+const ChartContainer: React.FC<{ title: string; description: string; data: Array<any>; children: React.ReactElement; dataKey: string; dataName?: string }> = ({ title, description, data, children, dataKey, dataName }) => {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="h-80">
+          {data && data.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              {children}
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+              Nessun dato disponibile per questo periodo.
+            </div>
+          )}
+        </div>
+      </CardContent>
+      {data && data.length > 0 && (
+           <CardFooter className="text-xs text-muted-foreground flex gap-1 items-center">
+               {/* Potremmo aggiungere qui la data dell'ultimo punto dati se necessario */}
+           </CardFooter>
+       )}
+    </Card>
+  );
+};
+
 
 const InsightsPanel = ({ 
   data, 
   onDateRangeChange,
   onTimeRangeChange,
-  isLoadingData = false
+  isLoadingData = false,
+  // Ricevi le props di stato dal padre
+  selectedTimeRange,
+  selectedDateRange,
+  isCustomDateActive
 }: InsightsPanelProps) => {
-  const [timeRange, setTimeRange] = useState('14d');
-  const [dateRange, setDateRange] = useState<{
-    from: Date;
-    to?: Date;
-  }>({
-    from: subDays(new Date(), 14),
-    to: new Date()
-  });
-  const [isCustomDateActive, setIsCustomDateActive] = useState(false);
+  // Estrai i dati reali dalla prop 'data'
+  const {
+    currentFollowers,
+    followerGrowthPercentage,
+    totalEngagement,
+    totalReach,
+    totalFanAdds,
+    totalFanRemoves,
+    totalPageViews,
+    growthData,
+    totalEngagementData,
+    totalReachData,
+    videoViewsData,
+    uniqueReachData,
+    pageViewsData,
+    fanAddsData,
+    fanRemovesData
+  } = data;
 
-  // Aggiorna dateRange quando cambiano i dati (quando arrivano nuovi dati dall'API)
-  useEffect(() => {
-    if (data && data.growthData && data.growthData.length > 0) {
-      // Tenta di ottenere le date reali dai dati API
-      try {
-        const firstDate = data.growthData[0]?.name;
-        const lastDate = data.growthData[data.growthData.length - 1]?.name;
-        if (firstDate && lastDate) {
-          console.log("Date dai dati API:", firstDate, lastDate);
-        }
-      } catch (e) {
-        console.error("Errore nell'analisi delle date dai dati:", e);
-      }
-    }
-  }, [data]);
-
-  // Sostituisci i dati mock con quelli reali dalla prop data
-  const growthData = data.growthData;
-  const engagementData = data.engagementData;
-  const demographicsData = data.demographicsData;
-  const locationData = data.locationData;
-  const sentimentTrend = data.sentimentTrend;
-  const followerGrowthPercentage = data.followerGrowthPercentage;
-  const totalComments = data.totalComments;
-  const totalReactions = data.totalReactions;
-  const averageEngagementRate = data.averageEngagementRate;
-  const totalReach = data.totalReach;
-  const reachGrowth = data.reachGrowth;
+  // Combina dati fan adds/removes per grafico
+  const fanActivityData = React.useMemo(() => {
+      const combined: { [key: string]: { name: string, adds?: number, removes?: number } } = {};
+      fanAddsData.forEach(d => {
+          if (!combined[d.name]) combined[d.name] = { name: d.name };
+          combined[d.name].adds = d.value;
+      });
+      fanRemovesData.forEach(d => {
+          if (!combined[d.name]) combined[d.name] = { name: d.name };
+          combined[d.name].removes = d.value; // Valore negativo per visualizzazione?
+      });
+      // Ordina per data se necessario (assumendo che 'name' sia la data)
+      return Object.values(combined).sort((a, b) => a.name.localeCompare(b.name));
+  }, [fanAddsData, fanRemovesData]);
 
   return (
     <div className="space-y-6">
+      {/* Controlli Data/Periodo */}
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Insights</h2>
           <p className="text-muted-foreground">
-            Analisi delle performance e dell'engagement della tua pagina
+            Performance reali della tua pagina Facebook
           </p>
         </div>
         
         <div className="flex items-center gap-3">
-          {/* Date picker personalizzato */}
+          {/* Date picker personalizzato - Mantenuto con posizionamento corretto */}
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 className={`flex items-center gap-1 h-10 ${isCustomDateActive ? "border-primary" : ""}`}
-                onClick={() => setIsCustomDateActive(true)}
+                disabled={isLoadingData} // Disabilita durante il caricamento
+                onClick={() => {
+                   // Segnala al padre l'intenzione di cambiare range (tramite callback)
+                   // Il padre aggiornerà selectedDateRange e isCustomDateActive
+                   // e li ripasserà come props aggiornate.
+                   // Non serve più calcolare date qui, lo fa il padre.
+                   // Chiamiamo onDateRangeChange con il range attuale per signalare
+                   onDateRangeChange(selectedDateRange);
+                }}
               >
                 <CalendarIcon className="h-4 w-4" />
-                {isCustomDateActive ? (
+                {/* Usa la prop isCustomDateActive e selectedDateRange */} 
+                {isCustomDateActive && selectedDateRange.from ? (
                   <span>
-                    {dateRange.from ? format(dateRange.from, "dd/MM/yyyy", { locale: it }) : ""} - 
-                    {dateRange.to ? format(dateRange.to, "dd/MM/yyyy", { locale: it }) : ""}
+                    {format(selectedDateRange.from, "dd/MM/yy", { locale: it })} - 
+                    {selectedDateRange.to ? format(selectedDateRange.to, "dd/MM/yy", { locale: it }) : ""}
                   </span>
                 ) : (
                   <span>Range personalizzato</span>
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
+             {/* Posizionato sotto, allineato a destra */}
+            <PopoverContent className="w-auto p-0" align="end" side="bottom" sideOffset={5}>
               <Calendar
                 mode="range"
-                selected={dateRange}
+                // Usa la prop selectedDateRange
+                selected={selectedDateRange} 
                 onSelect={(range) => {
-                  setDateRange(range);
-                  setIsCustomDateActive(true);
-                  if (onDateRangeChange) {
-                    onDateRangeChange(range);
-                  }
+                   // Chiama direttamente la callback del padre se il range è valido
+                   if (range?.from) { 
+                      onDateRangeChange(range);
+                   } 
                 }}
                 disabled={(date) => {
-                  // Disabilita date future e date più vecchie di 2 anni
                   const twoYearsAgo = new Date();
                   twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
                   return date > new Date() || date < twoYearsAgo;
@@ -151,19 +197,16 @@ const InsightsPanel = ({
                 locale={it}
                 footer={
                   <div className="p-2 border-t flex justify-between items-center">
-                    <div className="text-xs text-muted-foreground">Max 90 giorni per richiesta</div>
+                    <div className="text-xs text-muted-foreground">Max 90 giorni</div>
                     <Button 
                       variant="outline" 
                       size="sm"
                       onClick={() => {
-                        setIsCustomDateActive(false);
-                        setTimeRange('14d');
-                        if (onTimeRangeChange) {
-                          onTimeRangeChange('14d');
-                        }
+                        // Segnala al padre di resettare al periodo default (14d)
+                        onTimeRangeChange('14d');
                       }}
                     >
-                      Reset
+                      Reset Periodo
                     </Button>
                   </div>
                 }
@@ -171,672 +214,190 @@ const InsightsPanel = ({
             </PopoverContent>
           </Popover>
 
-          {/* Filtri avanzati */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                <Filter className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Filtri avanzati</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Select>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Aggregazione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="day">Giornaliera</SelectItem>
-                    <SelectItem value="week">Settimanale</SelectItem>
-                    <SelectItem value="days_28">28 giorni</SelectItem>
-                    <SelectItem value="month">Mensile</SelectItem>
-                    <SelectItem value="lifetime">Lifetime</SelectItem>
-                  </SelectContent>
-                </Select>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Select>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Tipo di contenuto" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tutti i contenuti</SelectItem>
-                    <SelectItem value="photo">Foto</SelectItem>
-                    <SelectItem value="video">Video</SelectItem>
-                    <SelectItem value="link">Link</SelectItem>
-                    <SelectItem value="text">Solo testo</SelectItem>
-                  </SelectContent>
-                </Select>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Button variant="outline" size="sm" className="w-full">
-                  <RefreshCcw className="h-3.5 w-3.5 mr-1" />
-                  Applica filtri
-                </Button>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           {/* Selectbox periodo predefinito */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center">
                   <Select 
-                    value={timeRange} 
+                    // Usa la prop selectedTimeRange, mostra vuoto se custom è attivo
+                    value={isCustomDateActive ? '' : selectedTimeRange} 
                     onValueChange={(value) => {
-                      setTimeRange(value);
-                      setIsCustomDateActive(false);
-                      if (onTimeRangeChange) {
-                        onTimeRangeChange(value);
-                      }
+                       // Chiama la callback del padre se un valore valido è selezionato
+                       if (value) { 
+                           onTimeRangeChange(value);
+                       }
                     }}
-                    disabled={isCustomDateActive}
+                    disabled={isLoadingData} // Disabilita durante il caricamento
                   >
                     <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Seleziona periodo" />
+                       {/* Modifica: Mostra testo custom o il valore selezionato */}
+                       {isCustomDateActive ? (
+                           <span className="text-muted-foreground">Range Personalizzato</span>
+                       ) : (
+                           <SelectValue placeholder="Seleziona periodo" />
+                       )}
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="7d">Ultimi 7 giorni</SelectItem>
                       <SelectItem value="14d">Ultimi 14 giorni</SelectItem>
                       <SelectItem value="30d">Ultimi 30 giorni</SelectItem>
-                      <SelectItem value="90d">Ultimi 90 giorni (massimo)</SelectItem>
+                      <SelectItem value="90d">Ultimi 90 giorni</SelectItem>
+                       {/* Rimosso: Opzione vuota non più necessaria qui */}
+                       {/* {isCustomDateActive && <SelectItem value="" disabled>Range Personalizzato</SelectItem>} */}
                     </SelectContent>
                   </Select>
-                  <HelpCircle className="h-4 w-4 ml-1 text-muted-foreground cursor-help" />
+                   {/* Tooltip Help rimosso per semplicità, può essere aggiunto se necessario */}
                 </div>
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                Il limite massimo per singola richiesta API Facebook è di 90 giorni.
-              </TooltipContent>
+               {/* Tooltip Content rimosso per semplicità */}
             </Tooltip>
           </TooltipProvider>
           
-          {/* Menu di esportazione avanzata */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-1">
-                <DownloadCloud className="h-4 w-4" />
-                <span>Esporta</span>
-                <MoreHorizontal className="h-3.5 w-3.5 ml-1 text-muted-foreground" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Esporta dati</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <FileSpreadsheet className="h-4 w-4" />
-                <span>Esporta in CSV</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <Download className="h-4 w-4" />
-                <span>Esporta in Excel</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <Share2 className="h-4 w-4" />
-                <span>Condividi report</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <HoverCard>
-                  <HoverCardTrigger asChild>
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      <Info className="h-3.5 w-3.5 mr-1" />
-                      <span>Limitazioni API Facebook</span>
-                    </div>
-                  </HoverCardTrigger>
-                  <HoverCardContent className="w-80">
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm">Limitazioni API Facebook</h4>
-                      <ul className="text-xs space-y-1.5 text-muted-foreground list-disc list-inside">
-                        <li>Massimo 90 giorni di dati per singola richiesta API</li>
-                        <li>Dati disponibili fino a 2 anni nel passato</li>
-                        <li>Aggregazioni disponibili: day, week, days_28, month, lifetime</li>
-                      </ul>
-                      <p className="text-xs text-muted-foreground">Per periodi più lunghi di 90 giorni, è necessario suddividere le richieste.</p>
-                    </div>
-                  </HoverCardContent>
-                </HoverCard>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+           {/* Rimosso Menu filtri avanzati e Esportazione per semplicità */}
         </div>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Key Metrics Reali - Aggiunte nuove card */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4"> {/* Aumentato a 5 colonne */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Follower</CardTitle>
+            <CardTitle className="text-sm font-medium">Follower Attuali</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">5,231</div>
-            <div className="flex items-center text-xs text-muted-foreground pt-1">
-              {parseFloat(followerGrowthPercentage) > 0 ? (
-                <ArrowUpRight className="h-4 w-4 text-emerald-500 mr-1" />
-              ) : (
-                <ArrowDownRight className="h-4 w-4 text-red-500 mr-1" />
-              )}
-              <span className={parseFloat(followerGrowthPercentage) > 0 ? "text-emerald-500" : "text-red-500"}>
-                {followerGrowthPercentage}%
-              </span>
-              <span className="ml-1">negli ultimi 14 giorni</span>
-            </div>
+            <div className="text-2xl font-bold">{currentFollowers.toLocaleString()}</div>
+             {/* Mostra crescita solo se calcolata */}
+            {parseFloat(followerGrowthPercentage) !== 0 && (
+                 <div className={`flex items-center text-xs ${parseFloat(followerGrowthPercentage) > 0 ? "text-emerald-500" : "text-red-500"} pt-1`}>
+                    {parseFloat(followerGrowthPercentage) > 0 ? (
+                        <ArrowUpRight className="h-4 w-4 mr-1" />
+                     ) : (
+                        <ArrowDownRight className="h-4 w-4 mr-1" />
+                     )}
+                    <span>{followerGrowthPercentage}%</span>
+                    <span className="text-muted-foreground ml-1">nel periodo</span>
+                 </div>
+            )}
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Commenti</CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Nuovi Fan</CardTitle>
+             <Users className="h-4 w-4 text-muted-foreground" /> 
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalComments}</div>
-            <div className="flex items-center text-xs text-muted-foreground pt-1">
-              <ArrowUpRight className="h-4 w-4 text-emerald-500 mr-1" />
-              <span className="text-emerald-500">12.5%</span>
-              <span className="ml-1">rispetto al periodo precedente</span>
-            </div>
+            <div className="text-2xl font-bold">{totalFanAdds.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground pt-1">
+              Totale nel periodo selezionato
+            </p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Engagement Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Visualizzazioni Pagina</CardTitle>
+             <Eye className="h-4 w-4 text-muted-foreground" /> 
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{averageEngagementRate}%</div>
-            <div className="flex items-center text-xs text-muted-foreground pt-1">
-              <ArrowUpRight className="h-4 w-4 text-emerald-500 mr-1" />
-              <span className="text-emerald-500">3.2%</span>
-              <span className="ml-1">rispetto al periodo precedente</span>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Reach</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalReach.toLocaleString()}</div>
-            <div className="flex items-center text-xs text-muted-foreground pt-1">
-              <ArrowUpRight className="h-4 w-4 text-emerald-500 mr-1" />
-              <span className="text-emerald-500">{reachGrowth}%</span>
-              <span className="ml-1">rispetto al periodo precedente</span>
-            </div>
+            <div className="text-2xl font-bold">{totalPageViews.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground pt-1">
+              Totale nel periodo selezionato
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Insights Tabs */}
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview" className="flex items-center gap-1">
-            <BarChart2 className="h-4 w-4" />
-            <span>Panoramica</span>
-          </TabsTrigger>
-          <TabsTrigger value="sentiment" className="flex items-center gap-1">
-            <FileText className="h-4 w-4" />
-            <span>Sentiment</span>
-          </TabsTrigger>
-          <TabsTrigger value="audience" className="flex items-center gap-1">
-            <Users className="h-4 w-4" />
-            <span>Audience</span>
-          </TabsTrigger>
-        </TabsList>
-        
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>Crescita Follower</CardTitle>
-                <CardDescription>
-                  Trend di crescita dei follower negli ultimi 14 giorni
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={growthData}
-                      margin={{
-                        top: 5,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis domain={['dataMin - 50', 'dataMax + 50']} />
-                      <RechartsTooltip formatter={(value) => [`${value} follower`, 'Totale']} />
-                      <Legend />
-                      <Line 
-                        type="monotone" 
-                        dataKey="followers" 
-                        name="Follower" 
-                        stroke="#3b82f6" 
-                        strokeWidth={2}
-                        activeDot={{ r: 8 }} 
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-              <CardFooter className="text-xs text-muted-foreground flex gap-1 items-center">
-                <Calendar className="h-4 w-4" />
-                <span>Dati aggiornati al 13 Apr 2025</span>
-              </CardFooter>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Engagement</CardTitle>
-                <CardDescription>
-                  Commenti e reazioni nell'ultimo periodo
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={engagementData}
-                      margin={{
-                        top: 5,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <RechartsTooltip />
-                      <Legend />
-                      <Bar dataKey="comments" name="Commenti" fill="#3b82f6" />
-                      <Bar dataKey="reactions" name="Reazioni" fill="#10b981" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Post Performance</CardTitle>
-                <CardDescription>
-                  Performance dei tuoi contenuti recenti
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="border rounded-md p-3">
-                    <div className="flex justify-between">
-                      <span className="font-medium">Nuovi orari estivi</span>
-                      <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Top Post</span>
-                    </div>
-                    <div className="text-sm text-gray-500 mt-1">Pubblicato: 11 Apr 2025</div>
-                    <div className="grid grid-cols-3 gap-2 mt-3 text-center">
-                      <div>
-                        <div className="text-sm font-semibold">342</div>
-                        <div className="text-xs text-gray-500">Reactions</div>
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold">78</div>
-                        <div className="text-xs text-gray-500">Commenti</div>
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold">2.4k</div>
-                        <div className="text-xs text-gray-500">Reach</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="border rounded-md p-3">
-                    <div className="flex justify-between">
-                      <span className="font-medium">Nuovi prodotti in arrivo</span>
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Trending</span>
-                    </div>
-                    <div className="text-sm text-gray-500 mt-1">Pubblicato: 8 Apr 2025</div>
-                    <div className="grid grid-cols-3 gap-2 mt-3 text-center">
-                      <div>
-                        <div className="text-sm font-semibold">287</div>
-                        <div className="text-xs text-gray-500">Reactions</div>
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold">56</div>
-                        <div className="text-xs text-gray-500">Commenti</div>
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold">1.9k</div>
-                        <div className="text-xs text-gray-500">Reach</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="border rounded-md p-3">
-                    <div className="flex justify-between">
-                      <span className="font-medium">Offerta speciale weekend</span>
-                    </div>
-                    <div className="text-sm text-gray-500 mt-1">Pubblicato: 5 Apr 2025</div>
-                    <div className="grid grid-cols-3 gap-2 mt-3 text-center">
-                      <div>
-                        <div className="text-sm font-semibold">198</div>
-                        <div className="text-xs text-gray-500">Reactions</div>
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold">43</div>
-                        <div className="text-xs text-gray-500">Commenti</div>
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold">1.3k</div>
-                        <div className="text-xs text-gray-500">Reach</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full">Vedi tutti i post</Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        {/* Sentiment Tab */}
-        <TabsContent value="sentiment" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>Trend Sentiment</CardTitle>
-                <CardDescription>
-                  Andamento del sentiment nei commenti degli ultimi 7 giorni
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={sentimentTrend}
-                      margin={{
-                        top: 5,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <RechartsTooltip />
-                      <Legend />
-                      <Line 
-                        type="monotone" 
-                        dataKey="positive" 
-                        name="Positivo" 
-                        stroke="#10b981" 
-                        strokeWidth={2} 
-                        activeDot={{ r: 8 }}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="negative" 
-                        name="Negativo" 
-                        stroke="#ef4444" 
-                        strokeWidth={2}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="neutral" 
-                        name="Neutro" 
-                        stroke="#64748b" 
-                        strokeWidth={2}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Distribuzione Sentiment</CardTitle>
-                <CardDescription>
-                  Distribuzione percentuale del sentiment dei commenti
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-72 flex items-center justify-center">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={[
-                          { name: 'Positivo', value: 58 },
-                          { name: 'Negativo', value: 22 },
-                          { name: 'Neutro', value: 20 },
-                        ]}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        <Cell fill="#10b981" />
-                        <Cell fill="#ef4444" />
-                        <Cell fill="#64748b" />
-                      </Pie>
-                      <RechartsTooltip formatter={(value) => [`${value}%`, 'Percentuale']} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-              <CardFooter className="text-sm text-center text-muted-foreground">
-                Basato sull'analisi di 312 commenti negli ultimi 14 giorni
-              </CardFooter>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Temi più discussi</CardTitle>
-                <CardDescription>
-                  Argomenti più menzionati nei commenti positivi e negativi
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="text-sm font-medium mb-3 flex items-center">
-                      <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-                      Temi Positivi
-                    </h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { topic: 'Qualità', score: 85 },
-                        { topic: 'Servizio', score: 78 },
-                        { topic: 'Atmosfera', score: 72 },
-                        { topic: 'Prezzi', score: 65 },
-                      ].map(item => (
-                        <div key={item.topic} className="bg-gray-50 p-2 rounded">
-                          <div className="flex justify-between text-sm">
-                            <span>{item.topic}</span>
-                            <span className="font-medium">{item.score}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1.5">
-                            <div 
-                              className="bg-green-500 h-1.5 rounded-full" 
-                              style={{ width: `${item.score}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-sm font-medium mb-3 flex items-center">
-                      <span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
-                      Temi Negativi
-                    </h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { topic: 'Attesa', score: 68 },
-                        { topic: 'Rumore', score: 52 },
-                        { topic: 'Porzioni', score: 45 },
-                        { topic: 'Parcheggio', score: 38 },
-                      ].map(item => (
-                        <div key={item.topic} className="bg-gray-50 p-2 rounded">
-                          <div className="flex justify-between text-sm">
-                            <span>{item.topic}</span>
-                            <span className="font-medium">{item.score}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1.5">
-                            <div 
-                              className="bg-red-500 h-1.5 rounded-full" 
-                              style={{ width: `${item.score}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        {/* Audience Tab */}
-        <TabsContent value="audience" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Demografia</CardTitle>
-                <CardDescription>
-                  Distribuzione demografica dei tuoi follower
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-72">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={demographicsData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, value }) => `${name}: ${value}%`}
-                      >
-                        {demographicsData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <RechartsTooltip formatter={(value) => [`${value}%`, 'Percentuale']} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Località</CardTitle>
-                <CardDescription>
-                  Distribuzione geografica dei tuoi follower
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-72">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={locationData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, value }) => `${name}: ${value}%`}
-                      >
-                        {locationData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <RechartsTooltip formatter={(value) => [`${value}%`, 'Percentuale']} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>Comportamento Audience</CardTitle>
-                <CardDescription>
-                  Quando i tuoi follower sono più attivi
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={[
-                        { hour: '00:00', activity: 12 },
-                        { hour: '03:00', activity: 5 },
-                        { hour: '06:00', activity: 8 },
-                        { hour: '09:00', activity: 45 },
-                        { hour: '12:00', activity: 78 },
-                        { hour: '15:00', activity: 85 },
-                        { hour: '18:00', activity: 100 },
-                        { hour: '21:00', activity: 65 },
-                      ]}
-                      margin={{
-                        top: 5,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="hour" />
-                      <YAxis />
-                      <RechartsTooltip formatter={(value) => [`${value}%`, 'Attività']} />
-                      <Legend />
-                      <Bar 
-                        dataKey="activity" 
-                        name="Attività" 
-                        fill="#8884d8" 
-                        radius={[4, 4, 0, 0]} 
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <span className="text-sm text-muted-foreground flex items-center gap-1">
-                  <HelpCircle className="h-4 w-4" />
-                  I dati mostrano quando la tua audience è più attiva
-                </span>
-                <Button variant="link" className="text-sm">Vedi dettagli</Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+       {/* Grafici Reali - Aggiunti nuovi grafici */} 
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+           {/* Grafico Crescita Follower */}
+          <ChartContainer title="Crescita Follower" description="Follower totali nel periodo selezionato" data={growthData} dataKey="value" dataName="Follower">
+             <LineChart data={growthData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+               <CartesianGrid strokeDasharray="3 3" />
+               <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+               <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => value.toLocaleString()} domain={['dataMin - 10', 'dataMax + 10']}/>
+               <RechartsTooltip formatter={(value: number) => [`${value.toLocaleString()}`, "Follower"]}/>
+               <Legend />
+               <Line type="monotone" dataKey="value" name="Follower" stroke="#3b82f6" strokeWidth={2} dot={false} activeDot={{ r: 6 }}/>
+             </LineChart>
+          </ChartContainer>
+
+          {/* Grafico Engagement Totale */}
+           <ChartContainer title="Engagement Totale" description="Interazioni totali (like, commenti, condivisioni, ecc.) nel periodo" data={totalEngagementData} dataKey="value" dataName="Engagement">
+               <BarChart data={totalEngagementData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                 <CartesianGrid strokeDasharray="3 3" />
+                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+                 <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => value.toLocaleString()} />
+                 <RechartsTooltip formatter={(value: number) => [`${value.toLocaleString()}`, "Engagement"]}/>
+                 <Legend />
+                 <Bar dataKey="value" name="Engagement" fill="#10b981" radius={[4, 4, 0, 0]} />
+               </BarChart>
+           </ChartContainer>
+
+           {/* Grafico Reach Totale */}
+           <ChartContainer title="Reach Totale" description="Visualizzazioni totali dei contenuti nel periodo" data={totalReachData} dataKey="value" dataName="Reach">
+               <LineChart data={totalReachData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                 <CartesianGrid strokeDasharray="3 3" />
+                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+                 <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => value.toLocaleString()} />
+                 <RechartsTooltip formatter={(value: number) => [`${value.toLocaleString()}`, "Reach"]}/>
+                 <Legend />
+                 <Line type="monotone" dataKey="value" name="Reach" stroke="#f97316" strokeWidth={2} dot={false} activeDot={{ r: 6 }}/>
+               </LineChart>
+           </ChartContainer>
+
+           {/* Grafico Visualizzazioni Video */}
+           <ChartContainer title="Visualizzazioni Video" description="Visualizzazioni totali dei video nel periodo" data={videoViewsData} dataKey="value" dataName="Visualizzazioni">
+               <LineChart data={videoViewsData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                 <CartesianGrid strokeDasharray="3 3" />
+                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+                 <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => value.toLocaleString()} />
+                 <RechartsTooltip formatter={(value: number) => [`${value.toLocaleString()}`, "Visualizzazioni"]}/>
+                 <Legend />
+                 <Line type="monotone" dataKey="value" name="Visualizzazioni" stroke="#8b5cf6" strokeWidth={2} dot={false} activeDot={{ r: 6 }}/>
+               </LineChart>
+           </ChartContainer>
+
+           {/* Nuovo Grafico: Reach Unica */} 
+           <ChartContainer title="Reach Unica" description="Persone uniche raggiunte dai contenuti nel periodo" data={uniqueReachData} dataKey="value" dataName="Persone Raggiunte">
+                <LineChart data={uniqueReachData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                 <CartesianGrid strokeDasharray="3 3" />
+                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+                 <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => value.toLocaleString()} />
+                 <RechartsTooltip formatter={(value: number) => [`${value.toLocaleString()}`, "Persone Raggiunte"]}/>
+                 <Legend />
+                 <Line type="monotone" dataKey="value" name="Persone Raggiunte" stroke="#ea580c" strokeWidth={2} dot={false} activeDot={{ r: 6 }}/>
+               </LineChart>
+           </ChartContainer>
+           
+            {/* Nuovo Grafico: Visualizzazioni Pagina */} 
+           <ChartContainer title="Visualizzazioni Pagina" description="Visualizzazioni totali del profilo della pagina" data={pageViewsData} dataKey="value" dataName="Visualizzazioni">
+                <LineChart data={pageViewsData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                 <CartesianGrid strokeDasharray="3 3" />
+                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+                 <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => value.toLocaleString()} />
+                 <RechartsTooltip formatter={(value: number) => [`${value.toLocaleString()}`, "Visualizzazioni"]}/>
+                 <Legend />
+                 <Line type="monotone" dataKey="value" name="Visualizzazioni" stroke="#ca8a04" strokeWidth={2} dot={false} activeDot={{ r: 6 }}/>
+               </LineChart>
+           </ChartContainer>
+           
+            {/* Nuovo Grafico: Fan Aggiunti/Rimossi */} 
+           <ChartContainer title="Fan Aggiunti / Rimossi" description="Nuovi 'Mi Piace' e 'Non Mi Piace Più' nel periodo" data={fanActivityData} dataKey="adds" dataName="Nuovi Fan">
+                <BarChart data={fanActivityData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => value.toLocaleString()} />
+                  <RechartsTooltip formatter={(value: number, name) => [`${value.toLocaleString()}`, name === 'adds' ? 'Nuovi Fan' : 'Fan Rimossi']}/>
+                  <Legend />
+                  <Bar dataKey="adds" name="Nuovi Fan" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="removes" name="Fan Rimossi" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                </BarChart>
+           </ChartContainer>
+           
+       </div>
+       
     </div>
   );
 };

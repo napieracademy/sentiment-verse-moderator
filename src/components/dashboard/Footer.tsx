@@ -1,10 +1,9 @@
-
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
     <footer className="py-3 bg-white border-t">
-      <div className="container">
+      <div className="container max-w-[1100px] mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center gap-2">
           <div className="text-sm text-gray-500">
             © 2025 SentimentVerse. Questa è una demo.
