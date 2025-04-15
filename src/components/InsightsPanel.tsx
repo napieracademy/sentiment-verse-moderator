@@ -1,74 +1,104 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { 
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { format, subDays } from "date-fns";
+import { it } from "date-fns/locale";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { 
   BarChart, LineChart, PieChart, ResponsiveContainer, 
   Bar, Line, Pie, XAxis, YAxis, CartesianGrid, 
-  Tooltip, Legend, Cell
+  Tooltip as RechartsTooltip, Legend, Cell
 } from 'recharts';
 import { 
   ArrowUpRight, ArrowDownRight, Users, MessageSquare, Eye,
-  BarChart2, Download, Calendar, TrendingUp, FileText, HelpCircle
+  BarChart2, Download, TrendingUp, FileText, HelpCircle, Info,
+  Filter, MoreHorizontal, DownloadCloud, FileSpreadsheet, Share2, RefreshCcw
 } from 'lucide-react';
-import { mockSentimentTrend } from '@/lib/mockData';
 
-// Additional mock data for insights
-const growthData = [
-  { name: '1 Apr', followers: 5120 },
-  { name: '3 Apr', followers: 5145 },
-  { name: '5 Apr', followers: 5180 },
-  { name: '7 Apr', followers: 5187 },
-  { name: '9 Apr', followers: 5210 },
-  { name: '11 Apr', followers: 5225 },
-  { name: '13 Apr', followers: 5231 },
-];
+// Tipi per i dati reali
+export interface InsightsData {
+  growthData: Array<{ name: string; followers: number }>;
+  engagementData: Array<{ name: string; comments: number; reactions: number }>;
+  demographicsData: Array<{ name: string; value: number }>;
+  locationData: Array<{ name: string; value: number }>;
+  sentimentTrend: Array<{ date: string; positive: number; negative: number; neutral: number }>;
+  followerGrowthPercentage: string;
+  totalComments: number;
+  totalReactions: number;
+  averageEngagementRate: string;
+  totalReach: number;
+  reachGrowth: number;
+}
 
-const engagementData = [
-  { name: '1 Apr', comments: 34, reactions: 87 },
-  { name: '3 Apr', comments: 42, reactions: 103 },
-  { name: '5 Apr', comments: 51, reactions: 129 },
-  { name: '7 Apr', comments: 38, reactions: 98 },
-  { name: '9 Apr', comments: 45, reactions: 112 },
-  { name: '11 Apr', comments: 53, reactions: 142 },
-  { name: '13 Apr', comments: 49, reactions: 131 },
-];
-
-const demographicsData = [
-  { name: '18-24', value: 15 },
-  { name: '25-34', value: 35 },
-  { name: '35-44', value: 25 },
-  { name: '45-54', value: 15 },
-  { name: '55+', value: 10 },
-];
-
-const locationData = [
-  { name: 'Roma', value: 35 },
-  { name: 'Milano', value: 25 },
-  { name: 'Napoli', value: 15 },
-  { name: 'Torino', value: 10 },
-  { name: 'Bologna', value: 8 },
-  { name: 'Altri', value: 7 },
-];
+interface InsightsPanelProps {
+  data: InsightsData;
+  onDateRangeChange?: (range: { from: Date; to?: Date }) => void;
+  onTimeRangeChange?: (range: string) => void;
+  isLoadingData?: boolean;
+}
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
-const InsightsPanel = () => {
+const InsightsPanel = ({ 
+  data, 
+  onDateRangeChange,
+  onTimeRangeChange,
+  isLoadingData = false
+}: InsightsPanelProps) => {
   const [timeRange, setTimeRange] = useState('14d');
+  const [dateRange, setDateRange] = useState<{
+    from: Date;
+    to?: Date;
+  }>({
+    from: subDays(new Date(), 14),
+    to: new Date()
+  });
+  const [isCustomDateActive, setIsCustomDateActive] = useState(false);
 
-  // Calculate summary stats
-  const followerGrowth = growthData[growthData.length - 1].followers - growthData[0].followers;
-  const followerGrowthPercentage = ((followerGrowth / growthData[0].followers) * 100).toFixed(1);
-  
-  const totalComments = engagementData.reduce((sum, day) => sum + day.comments, 0);
-  const totalReactions = engagementData.reduce((sum, day) => sum + day.reactions, 0);
-  
-  const averageEngagementRate = (((totalComments + totalReactions) / 7) / growthData[growthData.length - 1].followers * 100).toFixed(1);
-  
-  const totalReach = 12450;
-  const reachGrowth = 8.3;
+  // Aggiorna dateRange quando cambiano i dati (quando arrivano nuovi dati dall'API)
+  useEffect(() => {
+    if (data && data.growthData && data.growthData.length > 0) {
+      // Tenta di ottenere le date reali dai dati API
+      try {
+        const firstDate = data.growthData[0]?.name;
+        const lastDate = data.growthData[data.growthData.length - 1]?.name;
+        if (firstDate && lastDate) {
+          console.log("Date dai dati API:", firstDate, lastDate);
+        }
+      } catch (e) {
+        console.error("Errore nell'analisi delle date dai dati:", e);
+      }
+    }
+  }, [data]);
+
+  // Sostituisci i dati mock con quelli reali dalla prop data
+  const growthData = data.growthData;
+  const engagementData = data.engagementData;
+  const demographicsData = data.demographicsData;
+  const locationData = data.locationData;
+  const sentimentTrend = data.sentimentTrend;
+  const followerGrowthPercentage = data.followerGrowthPercentage;
+  const totalComments = data.totalComments;
+  const totalReactions = data.totalReactions;
+  const averageEngagementRate = data.averageEngagementRate;
+  const totalReach = data.totalReach;
+  const reachGrowth = data.reachGrowth;
 
   return (
     <div className="space-y-6">
@@ -79,22 +109,199 @@ const InsightsPanel = () => {
             Analisi delle performance e dell'engagement della tua pagina
           </p>
         </div>
+        
         <div className="flex items-center gap-3">
-          <Select defaultValue={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Seleziona periodo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7d">Ultimi 7 giorni</SelectItem>
-              <SelectItem value="14d">Ultimi 14 giorni</SelectItem>
-              <SelectItem value="30d">Ultimi 30 giorni</SelectItem>
-              <SelectItem value="90d">Ultimi 90 giorni</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" className="flex items-center gap-1">
-            <Download className="h-4 w-4" />
-            <span>Esporta</span>
-          </Button>
+          {/* Date picker personalizzato */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={`flex items-center gap-1 h-10 ${isCustomDateActive ? "border-primary" : ""}`}
+                onClick={() => setIsCustomDateActive(true)}
+              >
+                <CalendarIcon className="h-4 w-4" />
+                {isCustomDateActive ? (
+                  <span>
+                    {dateRange.from ? format(dateRange.from, "dd/MM/yyyy", { locale: it }) : ""} - 
+                    {dateRange.to ? format(dateRange.to, "dd/MM/yyyy", { locale: it }) : ""}
+                  </span>
+                ) : (
+                  <span>Range personalizzato</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={(range) => {
+                  setDateRange(range);
+                  setIsCustomDateActive(true);
+                  if (onDateRangeChange) {
+                    onDateRangeChange(range);
+                  }
+                }}
+                disabled={(date) => {
+                  // Disabilita date future e date più vecchie di 2 anni
+                  const twoYearsAgo = new Date();
+                  twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+                  return date > new Date() || date < twoYearsAgo;
+                }}
+                initialFocus
+                locale={it}
+                footer={
+                  <div className="p-2 border-t flex justify-between items-center">
+                    <div className="text-xs text-muted-foreground">Max 90 giorni per richiesta</div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setIsCustomDateActive(false);
+                        setTimeRange('14d');
+                        if (onTimeRangeChange) {
+                          onTimeRangeChange('14d');
+                        }
+                      }}
+                    >
+                      Reset
+                    </Button>
+                  </div>
+                }
+              />
+            </PopoverContent>
+          </Popover>
+
+          {/* Filtri avanzati */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Filter className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Filtri avanzati</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Aggregazione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="day">Giornaliera</SelectItem>
+                    <SelectItem value="week">Settimanale</SelectItem>
+                    <SelectItem value="days_28">28 giorni</SelectItem>
+                    <SelectItem value="month">Mensile</SelectItem>
+                    <SelectItem value="lifetime">Lifetime</SelectItem>
+                  </SelectContent>
+                </Select>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Tipo di contenuto" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tutti i contenuti</SelectItem>
+                    <SelectItem value="photo">Foto</SelectItem>
+                    <SelectItem value="video">Video</SelectItem>
+                    <SelectItem value="link">Link</SelectItem>
+                    <SelectItem value="text">Solo testo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Button variant="outline" size="sm" className="w-full">
+                  <RefreshCcw className="h-3.5 w-3.5 mr-1" />
+                  Applica filtri
+                </Button>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Selectbox periodo predefinito */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center">
+                  <Select 
+                    value={timeRange} 
+                    onValueChange={(value) => {
+                      setTimeRange(value);
+                      setIsCustomDateActive(false);
+                      if (onTimeRangeChange) {
+                        onTimeRangeChange(value);
+                      }
+                    }}
+                    disabled={isCustomDateActive}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Seleziona periodo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="7d">Ultimi 7 giorni</SelectItem>
+                      <SelectItem value="14d">Ultimi 14 giorni</SelectItem>
+                      <SelectItem value="30d">Ultimi 30 giorni</SelectItem>
+                      <SelectItem value="90d">Ultimi 90 giorni (massimo)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <HelpCircle className="h-4 w-4 ml-1 text-muted-foreground cursor-help" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                Il limite massimo per singola richiesta API Facebook è di 90 giorni.
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
+          {/* Menu di esportazione avanzata */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-1">
+                <DownloadCloud className="h-4 w-4" />
+                <span>Esporta</span>
+                <MoreHorizontal className="h-3.5 w-3.5 ml-1 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Esporta dati</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                <FileSpreadsheet className="h-4 w-4" />
+                <span>Esporta in CSV</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                <Download className="h-4 w-4" />
+                <span>Esporta in Excel</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                <Share2 className="h-4 w-4" />
+                <span>Condividi report</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <Info className="h-3.5 w-3.5 mr-1" />
+                      <span>Limitazioni API Facebook</span>
+                    </div>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-80">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Limitazioni API Facebook</h4>
+                      <ul className="text-xs space-y-1.5 text-muted-foreground list-disc list-inside">
+                        <li>Massimo 90 giorni di dati per singola richiesta API</li>
+                        <li>Dati disponibili fino a 2 anni nel passato</li>
+                        <li>Aggregazioni disponibili: day, week, days_28, month, lifetime</li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground">Per periodi più lunghi di 90 giorni, è necessario suddividere le richieste.</p>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -209,7 +416,7 @@ const InsightsPanel = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis domain={['dataMin - 50', 'dataMax + 50']} />
-                      <Tooltip formatter={(value) => [`${value} follower`, 'Totale']} />
+                      <RechartsTooltip formatter={(value) => [`${value} follower`, 'Totale']} />
                       <Legend />
                       <Line 
                         type="monotone" 
@@ -251,7 +458,7 @@ const InsightsPanel = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <Tooltip />
+                      <RechartsTooltip />
                       <Legend />
                       <Bar dataKey="comments" name="Commenti" fill="#3b82f6" />
                       <Bar dataKey="reactions" name="Reazioni" fill="#10b981" />
@@ -357,7 +564,7 @@ const InsightsPanel = () => {
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
-                      data={mockSentimentTrend}
+                      data={sentimentTrend}
                       margin={{
                         top: 5,
                         right: 30,
@@ -368,7 +575,7 @@ const InsightsPanel = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
                       <YAxis />
-                      <Tooltip />
+                      <RechartsTooltip />
                       <Legend />
                       <Line 
                         type="monotone" 
@@ -427,7 +634,7 @@ const InsightsPanel = () => {
                         <Cell fill="#ef4444" />
                         <Cell fill="#64748b" />
                       </Pie>
-                      <Tooltip formatter={(value) => [`${value}%`, 'Percentuale']} />
+                      <RechartsTooltip formatter={(value) => [`${value}%`, 'Percentuale']} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -535,7 +742,7 @@ const InsightsPanel = () => {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value) => [`${value}%`, 'Percentuale']} />
+                      <RechartsTooltip formatter={(value) => [`${value}%`, 'Percentuale']} />
                       <Legend />
                     </PieChart>
                   </ResponsiveContainer>
@@ -568,7 +775,7 @@ const InsightsPanel = () => {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value) => [`${value}%`, 'Percentuale']} />
+                      <RechartsTooltip formatter={(value) => [`${value}%`, 'Percentuale']} />
                       <Legend />
                     </PieChart>
                   </ResponsiveContainer>
@@ -607,7 +814,7 @@ const InsightsPanel = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="hour" />
                       <YAxis />
-                      <Tooltip formatter={(value) => [`${value}%`, 'Attività']} />
+                      <RechartsTooltip formatter={(value) => [`${value}%`, 'Attività']} />
                       <Legend />
                       <Bar 
                         dataKey="activity" 

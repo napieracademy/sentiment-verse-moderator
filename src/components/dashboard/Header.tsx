@@ -11,7 +11,8 @@ const Header = () => {
   // Array delle pagine principali per la navigazione
   const navigationItems = [
     { path: "/", label: "Home", icon: Home },
-    { path: "/facebook-data", label: "Facebook Data", icon: Database }
+    { path: "/facebook-data", label: "Facebook Data", icon: Database },
+    { path: "/insights", label: "Insights", icon: BarChart2 }
   ];
 
   return (
