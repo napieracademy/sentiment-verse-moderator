@@ -5,7 +5,7 @@ const Footer = () => {
     <footer className="py-3 bg-white border-t">
       <div className="container max-w-[1100px] mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center gap-2">
-          <div className="text-sm text-gray-500">
+          <div className="text-center text-sm text-muted-foreground">
             © 2025 SentimentVerse. Questa è una demo.
           </div>
           <div className="flex flex-wrap justify-center gap-4 text-sm">

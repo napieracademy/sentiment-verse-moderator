@@ -31,7 +31,7 @@ const Index: React.FC = () => {
 
       <div className="flex flex-col items-start space-y-6">
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold">SentimentVers!</h1>
+          <h1 className="text-4xl font-bold">SentimentVerse!</h1>
           <p className="text-xl text-muted-foreground">
             Modera e analizza i commenti delle tue pagine social con la potenza dell'intelligenza artificiale.
           </p>
