@@ -109,26 +109,28 @@ const Header = () => {
             <span className="font-bold">SentimentVerse</span>
           </NavLink>
           
-          {/* Navigation Menu */}
-          <nav className="hidden md:flex items-center space-x-1">
-            {navigationItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) => 
-                  `px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-1 transition-colors
-                   ${isActive 
-                     ? 'bg-blue-50 text-blue-700' 
-                     : 'text-gray-700'
-                   }`
-                }
-                end={item.path === "/"}
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </NavLink>
-            ))}
-          </nav>
+          {/* Navigation Menu - visibile solo se l'utente è loggato */}
+          {user && (
+            <nav className="hidden md:flex items-center space-x-1">
+              {navigationItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) => 
+                    `px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-1 transition-colors
+                     ${isActive 
+                       ? 'bg-blue-50 text-blue-700' 
+                       : 'text-gray-700'
+                     }`
+                  }
+                  end={item.path === "/"}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </nav>
+          )}
         </div>
         <div className="flex items-center space-x-4">
           <div className="relative">
@@ -176,19 +178,6 @@ const Header = () => {
             )}
           </div>
           
-          <Button
-            onClick={() => {
-              // Salviamo esplicitamente un flag per indicare che siamo in un flusso autenticato
-              // Questo serve a evitare reindirizzamenti non voluti nei componenti di autenticazione
-              localStorage.setItem('auth_return_path', '/welcome');
-              navigate('/select-page');
-            }}
-            variant="outline"
-            size="sm"
-            className="text-sm"
-          >
-            Cambia Pagina
-          </Button>
           <div className="flex items-center space-x-2">
             {loadingUser ? (
               <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
