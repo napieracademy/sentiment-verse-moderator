@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router-dom";
-import { Bell, BarChart2, MessageSquare, Database, Heart } from "lucide-react";
+import { Bell, BarChart2, MessageSquare, Database, Heart, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Header = () => {
@@ -11,7 +11,8 @@ const Header = () => {
   // Array delle pagine principali per la navigazione
   const navigationItems = [
     { path: "/facebook-data", label: "Facebook Data", icon: Database },
-    { path: "/insights", label: "Insights", icon: BarChart2 }
+    { path: "/insights", label: "Insights", icon: BarChart2 },
+    { path: "/post-insights", label: "Post Insights", icon: Activity }
   ];
 
   return (

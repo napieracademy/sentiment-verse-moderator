@@ -11,7 +11,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal, RefreshCw, BarChart2, MessageSquare, ThumbsUp, Share2, Eye, Users, MousePointerClick } from 'lucide-react';
+import { ArrowUpDown, ChevronDown, MoreHorizontal, RefreshCw, BarChart2, MessageSquare, ThumbsUp, Share2, Eye, Users, MousePointerClick, Facebook } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox"; // Potrebbe servire per selezione multipla futura
@@ -34,6 +34,8 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { it } from 'date-fns/locale';
@@ -69,6 +71,27 @@ interface PostInsightsData {
   post_video_views?: number; // Visualizzazioni di 3s
   post_video_avg_time_watched?: number; // Tempo medio visualizzazione (ms)
   post_negative_feedback_unique?: number; // Nascoste/Segnalate (utenti unici)
+}
+
+// Interfaccia per i dati della pagina Facebook
+interface FacebookPage {
+  id: string;
+  name?: string;
+  bio?: string;
+  about?: string;
+  category?: string;
+  category_list?: { id: string, name: string }[];
+  fan_count?: number;
+  followers_count?: number;
+  description?: string;
+  website?: string;
+  picture?: {
+    data: {
+      url: string;
+      width?: number;
+      height?: number;
+    }
+  };
 }
 
 // Elenco metriche da richiedere all'API /insights (Escludendo deprecate)
@@ -265,8 +288,56 @@ const PostInsights: React.FC = () => {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({}); // Serve per gestire la selezione
 
+  // Stato per i dati della pagina
+  const [pageData, setPageData] = useState<FacebookPage | null>(null);
+  const [loadingPageData, setLoadingPageData] = useState<boolean>(true);
+
+  // Token e ID della pagina
   const token = "EAARrf6dn8hIBO0ncV0G3zZCy6Pk1bBXZCot0KhDFVcHvba6OguZANMYlJp3ozq7h5nTAF2o2h1H3lyftV7fc0Cy2NmvmBJowmXrVPU627ykxqz7aGxbyVZBq7fUimHdWOddcLCZAQ1kzSMSEEQMqHS3wDZBU4FqmCqLpls7C5TFB55tqMZBXey0PhtThrkN1mqCQthAJSyjshd2GqIZD";
-  const pageId = "121428567930871";
+  const pageId = "121428567930871"; // ID default per "Te la do io Firenze"
+
+  // Funzione per recuperare i dati della pagina
+  const fetchPageData = useCallback(async () => {
+    setLoadingPageData(true);
+    try {
+      const fields = [
+        'id',
+        'name',
+        'about',
+        'bio',
+        'category',
+        'category_list',
+        'description',
+        'fan_count',
+        'followers_count',
+        'website',
+        'picture.type(large)'
+      ].join(',');
+      
+      const url = `https://graph.facebook.com/v22.0/${pageId}?fields=${fields}&access_token=${token}`;
+      
+      console.log("Fetching page data...");
+      const response = await fetch(url);
+      const json = await response.json();
+      
+      if (!response.ok) {
+        console.error("API Error Response:", json);
+        throw new Error(json.error?.message || "Errore nel recupero dei dati della pagina.");
+      }
+      
+      setPageData(json);
+      console.log("Page data fetched:", json);
+    } catch (err: any) {
+      console.error("Fetch Page Data Error:", err);
+      toast({ 
+        title: "Errore Dati Pagina", 
+        description: err.message, 
+        variant: "destructive" 
+      });
+    } finally {
+      setLoadingPageData(false);
+    }
+  }, [token, pageId, toast]);
 
   // --- Funzione Fetch Posts (Modificata per triggerare fetch insights) ---
   const fetchPosts = useCallback(async () => {
@@ -313,8 +384,6 @@ const PostInsights: React.FC = () => {
       });
 
       // Avvia il caricamento degli insights per tutti i post recuperati
-      // Usiamo Promise.all per aspettare che tutte le chiamate (mock) finiscano
-      // NOTA: In produzione, questo può essere lento. Considerare batch API o caricamento on-demand.
       await Promise.all(
           initialPosts.map(async (post) => {
               try {
@@ -399,10 +468,11 @@ const PostInsights: React.FC = () => {
     }
   }, [token]); // Tolto toast dalle dipendenze
 
-  // --- Effetto Caricamento Post ---
+  // --- Effetto Caricamento Dati ---
   useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+    fetchPageData(); // Prima carica i dati della pagina
+    fetchPosts();    // Poi carica i post
+  }, [fetchPageData, fetchPosts]);
 
   // --- Istanza TanStack Table ---
   const table = useReactTable({
@@ -422,12 +492,78 @@ const PostInsights: React.FC = () => {
       columnVisibility,
       rowSelection,
     },
+    initialState: {
+      pagination: {
+        pageSize: 10, // Default: 10 righe per pagina
+      },
+    },
   });
 
   // --- Rendering ---
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 container mx-auto px-4 py-8 space-y-6">
+        {/* Informazioni sulla pagina - Copiata esattamente da FacebookData.tsx */}
+        {loadingPageData ? (
+          <Card>
+            <CardContent className="p-6 flex flex-col items-center justify-center h-[300px] text-center">
+              <RefreshCw className="h-8 w-8 animate-spin text-blue-500 mb-4" />
+              <p className="text-muted-foreground">
+                Caricamento dati pagina...
+              </p>
+            </CardContent>
+          </Card>
+        ) : pageData && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                {pageData.picture?.data.url && (
+                  <Avatar className="h-14 w-14">
+                    <AvatarImage src={pageData.picture.data.url} alt={pageData.name || 'Pagina Facebook'} />
+                    <AvatarFallback>{pageData.name?.charAt(0) || 'FB'}</AvatarFallback>
+                  </Avatar>
+                )}
+                <div className="flex-1">
+                  <CardTitle className="text-xl">{pageData.name}</CardTitle>
+                  <CardDescription>{pageData.bio || pageData.about || pageData.description}</CardDescription>
+                  {pageData.category && (
+                    <Badge variant="outline" className="mt-1">{pageData.category}</Badge>
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white p-3 rounded border">
+                  <div className="text-sm text-muted-foreground">ID Pagina</div>
+                  <div className="font-medium">{pageData.id}</div>
+                </div>
+                <div className="bg-white p-3 rounded border">
+                  <div className="text-sm text-muted-foreground">Fan</div>
+                  <div className="font-medium">{pageData.fan_count?.toLocaleString() || 0}</div>
+                </div>
+                <div className="bg-white p-3 rounded border">
+                  <div className="text-sm text-muted-foreground">Followers</div>
+                  <div className="font-medium">{pageData.followers_count?.toLocaleString() || 0}</div>
+                </div>
+                <div className="bg-white p-3 rounded border">
+                  <div className="text-sm text-muted-foreground">Post</div>
+                  <div className="font-medium">{postsWithInsights.length}</div>
+                </div>
+              </div>
+              
+              {pageData.website && (
+                <div className="mt-4 text-sm">
+                  <span className="text-muted-foreground">Website: </span>
+                  <a href={pageData.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    {pageData.website}
+                  </a>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Header Pagina */}
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Analisi Insights per Post</h1>

@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Facebook, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import InsightsPanel from "@/components/InsightsPanel";
 import { format, subDays, parseISO } from "date-fns";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 // Interfaccia per le metriche di Facebook
 interface FacebookMetric {
@@ -17,6 +19,27 @@ interface FacebookMetric {
   title: string;
   description: string;
   id: string;
+}
+
+// Interfaccia per i dati della pagina Facebook
+interface FacebookPage {
+  id: string;
+  name?: string;
+  bio?: string;
+  about?: string;
+  category?: string;
+  category_list?: { id: string, name: string }[];
+  fan_count?: number;
+  followers_count?: number;
+  description?: string;
+  website?: string;
+  picture?: {
+    data: {
+      url: string;
+      width?: number;
+      height?: number;
+    }
+  };
 }
 
 // Descrizioni delle metriche
@@ -55,8 +78,56 @@ const Insights: React.FC = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState('14d');
   const [isCustomDateActive, setIsCustomDateActive] = useState(false);
 
-  // Token fisso per Te la do io Firenze
+  // Stato per i dati della pagina
+  const [pageData, setPageData] = useState<FacebookPage | null>(null);
+  const [loadingPageData, setLoadingPageData] = useState<boolean>(true);
+
+  // Token fisso e pageId per Te la do io Firenze
   const token = "EAARrf6dn8hIBO0ncV0G3zZCy6Pk1bBXZCot0KhDFVcHvba6OguZANMYlJp3ozq7h5nTAF2o2h1H3lyftV7fc0Cy2NmvmBJowmXrVPU627ykxqz7aGxbyVZBq7fUimHdWOddcLCZAQ1kzSMSEEQMqHS3wDZBU4FqmCqLpls7C5TFB55tqMZBXey0PhtThrkN1mqCQthAJSyjshd2GqIZD";
+  const pageId = "121428567930871"; // ID fisso per Te la do io Firenze
+  
+  // Funzione per recuperare i dati della pagina
+  const fetchPageData = useCallback(async () => {
+    setLoadingPageData(true);
+    try {
+      const fields = [
+        'id',
+        'name',
+        'about',
+        'bio',
+        'category',
+        'category_list',
+        'description',
+        'fan_count',
+        'followers_count',
+        'website',
+        'picture.type(large)'
+      ].join(',');
+      
+      const url = `https://graph.facebook.com/v22.0/${pageId}?fields=${fields}&access_token=${token}`;
+      
+      console.log("Fetching page data...");
+      const response = await fetch(url);
+      const json = await response.json();
+      
+      if (!response.ok) {
+        console.error("API Error Response:", json);
+        throw new Error(json.error?.message || "Errore nel recupero dei dati della pagina.");
+      }
+      
+      setPageData(json);
+      console.log("Page data fetched:", json);
+    } catch (err: any) {
+      console.error("Fetch Page Data Error:", err);
+      toast({ 
+        title: "Errore Dati Pagina", 
+        description: err.message, 
+        variant: "destructive" 
+      });
+    } finally {
+      setLoadingPageData(false);
+    }
+  }, [token, pageId, toast]);
   
   // Funzione per calcolare le date in base al periodo selezionato
   const getDateRangeFromTimeRange = useCallback((range: string) => {
@@ -99,7 +170,6 @@ const Insights: React.FC = () => {
     setRawResponse(null);
 
     try {
-      const pageId = "121428567930871"; // ID fisso per Te la do io Firenze
       const since = formatDateForApi(dateRange.from);
       const until = formatDateForApi(dateRange.to);
 
@@ -150,7 +220,7 @@ const Insights: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [token, toast]);
+  }, [token, pageId, toast]);
 
   // La funzione fetchInsights originale ora utilizza la funzione con date
   const fetchInsights = useCallback(() => {
@@ -164,9 +234,11 @@ const Insights: React.FC = () => {
     }
   }, [fetchInsightsWithDateRange, getDateRangeFromTimeRange, isCustomDateActive, selectedDateRange, selectedTimeRange]);
 
+  // Effect per caricare dati all'avvio 
   useEffect(() => {
+    fetchPageData(); // Prima carica dati della pagina
     fetchInsights();
-  }, []);
+  }, [fetchPageData, fetchInsights]);
 
   // Formatta i numeri per la visualizzazione
   const formatNumber = (num: number): string => {
@@ -275,7 +347,7 @@ const Insights: React.FC = () => {
     };
   };
 
-  if (loading) {
+  if (loading && !pageData) {
     return (
       <div className="min-h-screen flex flex-col">
         <main className="flex-1 container mx-auto px-4 py-8">
@@ -292,7 +364,7 @@ const Insights: React.FC = () => {
     );
   }
 
-  if (error && !data) {
+  if (error && !data && !pageData) {
     return (
       <div className="min-h-screen flex flex-col">
         <main className="flex-1 container mx-auto px-4 py-8">
@@ -316,8 +388,76 @@ const Insights: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 container mx-auto px-4 py-8">
+        {/* Header con info della pagina (dinamico) */}
+        {loadingPageData ? (
+          <Card className="mb-6">
+            <CardContent className="p-6 flex items-center justify-center h-24">
+              <RefreshCw className="h-6 w-6 text-blue-500 animate-spin mr-2" />
+              <span className="text-sm text-muted-foreground">Caricamento dati pagina...</span>
+            </CardContent>
+          </Card>
+        ) : pageData ? (
+          <Card className="mb-6 border-facebook/20 bg-gradient-to-r from-blue-50 to-white">
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                {pageData.picture?.data.url && (
+                  <Avatar className="h-14 w-14 border-2 border-facebook shadow-md">
+                    <AvatarImage src={pageData.picture.data.url} alt={pageData.name || 'Pagina Facebook'} />
+                    <AvatarFallback>{pageData.name?.charAt(0) || 'FB'}</AvatarFallback>
+                  </Avatar>
+                )}
+                <div className="flex-1">
+                  <CardTitle className="flex items-center text-xl">
+                    {pageData.name}
+                    <Facebook className="ml-2 text-facebook h-5 w-5" />
+                  </CardTitle>
+                  <CardDescription>{pageData.bio || pageData.about || pageData.description}</CardDescription>
+                  {pageData.category && (
+                    <Badge variant="outline" className="mt-1">{pageData.category}</Badge>
+                  )}
+                </div>
+                <div className="ml-auto">
+                  <Button onClick={fetchInsights} variant="outline" className="text-facebook border-facebook/30 hover:bg-facebook/10">
+                    <RefreshCw className="h-4 w-4 mr-2" /> 
+                    Aggiorna dati
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white p-3 rounded border">
+                  <div className="text-sm text-muted-foreground">ID Pagina</div>
+                  <div className="font-medium">{pageData.id}</div>
+                </div>
+                <div className="bg-white p-3 rounded border">
+                  <div className="text-sm text-muted-foreground">Fan</div>
+                  <div className="font-medium">{pageData.fan_count?.toLocaleString() || 0}</div>
+                </div>
+                <div className="bg-white p-3 rounded border">
+                  <div className="text-sm text-muted-foreground">Followers</div>
+                  <div className="font-medium">{pageData.followers_count?.toLocaleString() || 0}</div>
+                </div>
+                <div className="bg-white p-3 rounded border">
+                  <div className="text-sm text-muted-foreground">Metriche</div>
+                  <div className="font-medium">{data?.length || 0}</div>
+                </div>
+              </div>
+              
+              {pageData.website && (
+                <div className="mt-4 text-sm">
+                  <span className="text-muted-foreground">Website: </span>
+                  <a href={pageData.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    {pageData.website}
+                  </a>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ) : null}
+
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Facebook Insights</h1>
+          <h2 className="text-xl font-bold">Facebook Insights</h2>
           <Button onClick={fetchInsights} className="flex items-center gap-2">
             <RefreshCw className="h-4 w-4" />
             Aggiorna Dati
