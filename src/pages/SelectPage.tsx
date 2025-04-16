@@ -1,10 +1,11 @@
-
 import { useState, useEffect } from "react";
 import PageSelectionModal from "@/components/PageSelectionModal";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const SelectPage = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isPageSelectionModalOpen, setIsPageSelectionModalOpen] = useState(false);
   
   useEffect(() => {
@@ -14,7 +15,11 @@ const SelectPage = () => {
   const handleModalOpenChange = (open: boolean) => {
     setIsPageSelectionModalOpen(open);
     if (!open) {
-      navigate('/');
+      toast({
+        title: "Selezione annullata",
+        description: "Nessuna pagina selezionata. Puoi scegliere una pagina in qualsiasi momento.",
+      });
+      navigate('/welcome');
     }
   };
   

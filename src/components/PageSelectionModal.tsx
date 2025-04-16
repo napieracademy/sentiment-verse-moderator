@@ -106,8 +106,14 @@ const PageSelectionModal = ({
         if (response && !response.error) {
           localStorage.setItem("selectedPage", JSON.stringify(response));
           localStorage.setItem("pageAccessToken", selectedPage.access_token);
+          
+          toast({
+            title: "Pagina selezionata",
+            description: `Hai selezionato la pagina ${response.name}`,
+          });
+          
           onOpenChange(false);
-          navigate('/facebook-data');
+          navigate('/welcome');
         } else {
           toast({
             title: "Errore",

@@ -56,6 +56,10 @@ const Header = () => {
   const handleLogin = async () => {
     setIsLoggingIn(true);
     try {
+      // Forziamo sempre il reindirizzamento alla pagina di benvenuto dopo il login dall'header
+      // per mantenere coerente il flusso di onboarding
+      localStorage.setItem('auth_return_path', '/welcome');
+      
       const { error } = await handleFacebookLogin();
       if (error) {
         toast({
@@ -160,7 +164,12 @@ const Header = () => {
           </div>
           
           <Button
-            onClick={() => navigate('/select-page')}
+            onClick={() => {
+              // Salviamo esplicitamente un flag per indicare che siamo in un flusso autenticato
+              // Questo serve a evitare reindirizzamenti non voluti nei componenti di autenticazione
+              localStorage.setItem('auth_return_path', '/welcome');
+              navigate('/select-page');
+            }}
             variant="outline"
             size="sm"
             className="text-sm"

@@ -3,20 +3,40 @@ import { supabase } from '@/integrations/supabase/client';
 
 // Export the login function so other components can use it
 export const handleFacebookLogin = async () => {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'facebook',
-    options: {
-      scopes: 'public_profile,pages_show_list,pages_read_engagement,pages_read_user_content',
-      redirectTo: window.location.origin + '/auth/facebook/callback'
-    }
-  });
-
-  if (error) {
-    console.error('Error logging in with Facebook:', error);
-    return { error };
-  }
+  // Costruiamo esplicitamente l'URL di callback per essere sicuri che sia corretto
+  const callbackUrl = window.location.origin + '/auth/facebook/callback';
+  console.log('Facebook login initiated, callback URL:', callbackUrl);
   
-  return { data };
+  // Salviamo l'URL corrente per poter tornare qui dopo l'autenticazione
+  try {
+    // Memorizza l'URL corrente (escludendo la home)
+    if (window.location.pathname !== '/' && window.location.pathname !== '/auth/facebook/callback') {
+      console.log('Saving return URL:', window.location.pathname);
+      localStorage.setItem('auth_return_path', window.location.pathname);
+    } else {
+      // Se siamo sulla home o callback, impostiamo il ritorno a welcome
+      localStorage.setItem('auth_return_path', '/welcome');
+    }
+    
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'facebook',
+      options: {
+        scopes: 'public_profile,pages_show_list,pages_read_engagement,pages_read_user_content',
+        redirectTo: callbackUrl
+      }
+    });
+
+    if (error) {
+      console.error('Error initiating Facebook login:', error);
+      return { error };
+    }
+    
+    console.log('OAuth flow initiated successfully');
+    return { data };
+  } catch (err) {
+    console.error('Unexpected error during login flow:', err);
+    return { error: err as Error };
+  }
 };
 
 interface FacebookSDKProps {

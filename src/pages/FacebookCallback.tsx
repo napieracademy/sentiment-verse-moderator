@@ -8,21 +8,47 @@ const FacebookCallback: React.FC = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Recuperiamo il percorso memorizzato (se esiste)
+    const getSavedPath = () => {
+      const savedPath = localStorage.getItem('auth_return_path');
+      console.log('Saved return path:', savedPath);
+      // Rimuoviamo il percorso salvato per evitare problemi futuri
+      localStorage.removeItem('auth_return_path');
+      // Torniamo al percorso salvato o alla pagina welcome come default
+      return savedPath || '/welcome';
+    };
+
+    // Rimuoviamo il flag di autenticazione in corso
+    const cleanupAuthState = () => {
+      console.log('Clearing authentication state');
+      sessionStorage.removeItem('authenticating');
+    };
+    
     // Get the hash from the URL
     const hash = window.location.hash;
+    
+    console.log('Processing Facebook auth callback, hash present:', !!hash);
     
     if (hash) {
       // The hash contains the access token from Supabase OAuth
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session) {
+          console.log('Authentication successful, session established');
+          cleanupAuthState();
+          
           toast({
             title: "Autenticazione riuscita",
             description: "Accesso con Facebook completato con successo.",
           });
           
-          // Redirect to the new welcome page
-          navigate('/welcome');
+          // Reindirizza al percorso salvato o alla pagina welcome
+          const returnPath = getSavedPath();
+          console.log('Redirecting to:', returnPath);
+          navigate(returnPath);
         } else {
+          console.error('No session found after authentication');
+          cleanupAuthState();
+          
           toast({
             title: "Errore di autenticazione",
             description: "Sessione non trovata. Riprova.",
@@ -33,6 +59,9 @@ const FacebookCallback: React.FC = () => {
       });
     } else {
       // No hash found, something went wrong
+      console.error('No hash data in callback URL');
+      cleanupAuthState();
+      
       toast({
         title: "Errore di autenticazione",
         description: "Nessun dato di autenticazione ricevuto.",

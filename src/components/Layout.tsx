@@ -39,18 +39,34 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         return;
       }
 
+      // Controlla se siamo in un processo di autenticazione attivo
+      const isAuthenticating = sessionStorage.getItem('authenticating') === 'true';
+      if (isAuthenticating) {
+        console.log('Autenticazione in corso, skip della verifica auth');
+        setIsLoading(false);
+        return;
+      }
+
       console.log("Verificando autenticazione per rotta protetta:", location.pathname);
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         console.log("Utente non autenticato, reindirizzamento alla home");
+        // Salva il percorso corrente prima del reindirizzamento
+        localStorage.setItem('auth_return_path', location.pathname);
+        
         toast({
           title: "Accesso richiesto",
           description: "Devi accedere con Facebook per visualizzare questa pagina.",
           variant: "destructive"
         });
+        
+        // Segnala che stiamo avviando un processo di autenticazione
+        sessionStorage.setItem('authenticating', 'true');
+        
         navigate('/', { replace: true });
       } else {
+        sessionStorage.removeItem('authenticating');
         console.log("Utente autenticato:", session.user.id);
       }
       
