@@ -18,6 +18,7 @@ import DeletionStatus from "./pages/facebook/DeletionStatus";
 import Insights from "./pages/Insights";
 import PostInsights from "./pages/PostInsights";
 import Welcome from "./pages/Welcome";
+import Bye from "./pages/Bye";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/insights" element={<Layout><Insights /></Layout>} />
           <Route path="/post-insights" element={<Layout><PostInsights /></Layout>} />
           <Route path="/welcome" element={<Layout><Welcome /></Layout>} />
+          <Route path="/bye" element={<Layout><Bye /></Layout>} />
           <Route path="*" element={<Layout><NotFound /></Layout>} />
         </Routes>
         <Toaster />

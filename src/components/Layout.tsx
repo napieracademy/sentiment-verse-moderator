@@ -20,7 +20,8 @@ const PUBLIC_ROUTES = [
   '/facebook/deauthorize',
   '/deletion_status',
   '/facebook/deletion_status',
-  '/welcome'
+  '/welcome',
+  '/bye'
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {

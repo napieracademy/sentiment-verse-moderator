@@ -49,8 +49,21 @@ const Header = () => {
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/');
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logout effettuato",
+        description: "La tua sessione è stata chiusa con successo.",
+      });
+      navigate('/bye');
+    } catch (error) {
+      console.error("Errore durante il logout:", error);
+      toast({
+        title: "Errore durante il logout",
+        description: "Si è verificato un problema durante il logout. Riprova.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleLogin = async () => {
