@@ -158,7 +158,6 @@ const FacebookData = () => {
   // Mappa di token specifici per pagina
   const pageTokens: Record<string, string> = {
     "121428567930871": "EAARrf6dn8hIBO0ncV0G3zZCy6Pk1bBXZCot0KhDFVcHvba6OguZANMYlJp3ozq7h5nTAF2o2h1H3lyftV7fc0Cy2NmvmBJowmXrVPU627ykxqz7aGxbyVZBq7fUimHdWOddcLCZAQ1kzSMSEEQMqHS3wDZBU4FqmCqLpls7C5TFB55tqMZBXey0PhtThrkN1mqCQthAJSyjshd2GqIZD", // Te la do io Firenze
-    "111619452357834": "EAARrf6dn8hIBO4kLX2CKhXvUi1oLOeeC0dwZAxt0dsQgC2ZCZC6gnXeGcBtwgnTnWlOyiJMoAzHZAz9SK9ZA9QRwQ2v4K0Nqo6b4OqGbnfzRgOWaZAXlOBIuGtYFKJoZAUt5eDQsd6mzRchirU2iYLtLur79an37HupARnKkf5nF9iWbGt1NRkb3dpZC0O84hFpRoQZBOH6rsRiqLAVDtawtyRJyoAr5YgSsl0QZDZD"  // Metro - The Game (aggiornato con token funzionante)
   };
   
   // Informazioni statiche delle pagine
@@ -168,11 +167,6 @@ const FacebookData = () => {
       logo: "https://scontent-fco2-1.xx.fbcdn.net/v/t39.30808-1/360090864_602948561987424_808889609597729734_n.jpg?stp=c183.183.714.714a_dst-jpg_s200x200_tt6",
       color: "blue"
     },
-    "111619452357834": {
-      name: "Metro - The Game",
-      logo: "https://scontent-fco2-1.xx.fbcdn.net/v/t39.30808-1/352802013_210008308648923_7954954456104324277_n.jpg?stp=dst-jpg_s200x200_tt6",
-      color: "green"
-    }
   };
   
   // Cache dei dati delle pagine
