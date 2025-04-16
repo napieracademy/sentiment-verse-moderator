@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router-dom";
-import { Bell, BarChart2, MessageSquare, Database, Heart, Activity, LogOut, User } from "lucide-react";
+import { Bell, BarChart2, MessageSquare, Database, Heart, Activity, LogOut, User, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { handleFacebookLogin } from "@/components/FacebookSDK";
+import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,9 +19,11 @@ import {
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
   const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -47,6 +51,29 @@ const Header = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/');
+  };
+
+  const handleLogin = async () => {
+    setIsLoggingIn(true);
+    try {
+      const { error } = await handleFacebookLogin();
+      if (error) {
+        toast({
+          title: "Errore di accesso",
+          description: "Non è stato possibile accedere con Facebook. Riprova.",
+          variant: "destructive"
+        });
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante l'accesso. Riprova.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
   // Array delle pagine principali per la navigazione
@@ -180,7 +207,24 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button onClick={() => navigate('/')} size="sm">Login</Button>
+              <Button 
+                onClick={handleLogin} 
+                size="sm" 
+                disabled={isLoggingIn}
+                className="flex items-center gap-2"
+              >
+                {isLoggingIn ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                    <span>Accesso...</span>
+                  </>
+                ) : (
+                  <>
+                    <Facebook className="h-4 w-4" />
+                    <span>Login</span>
+                  </>
+                )}
+              </Button>
             )}
           </div>
         </div>
