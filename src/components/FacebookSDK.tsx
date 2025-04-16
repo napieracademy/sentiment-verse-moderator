@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -26,13 +25,54 @@ interface FacebookSDKProps {
 
 const FacebookSDK: React.FC<FacebookSDKProps> = ({ onSDKLoaded }) => {
   useEffect(() => {
-    // Notify that the SDK is "loaded" (even though we're not actually loading it anymore)
-    if (onSDKLoaded) {
-      onSDKLoaded();
+    // Check if FB SDK is already loaded
+    if (window.FB) {
+      console.log("Facebook SDK is already loaded");
+      if (onSDKLoaded) onSDKLoaded();
+      document.dispatchEvent(new Event('fb-sdk-loaded'));
+      return;
     }
+
+    // Function to load the Facebook SDK asynchronously
+    const loadFacebookSDK = () => {
+      console.log("Loading Facebook SDK...");
+      // Add the Facebook SDK script
+      window.fbAsyncInit = function() {
+        window.FB.init({
+          appId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID || '1071003064434264', // Fallback to a default if env var not set
+          xfbml: true,
+          version: 'v22.0' // Use the latest stable version
+        });
+        
+        console.log("Facebook SDK initialized successfully");
+        
+        // Notify that the SDK is loaded
+        if (onSDKLoaded) onSDKLoaded();
+        
+        // Dispatch a custom event for backward compatibility
+        document.dispatchEvent(new Event('fb-sdk-loaded'));
+      };
+      
+      // Load the SDK asynchronously
+      (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s) as HTMLScriptElement;
+        js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        js.async = true;
+        js.defer = true;
+        fjs.parentNode?.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+    };
+
+    // Load the Facebook SDK
+    loadFacebookSDK();
     
-    // Dispatch a custom event for backward compatibility
-    document.dispatchEvent(new Event('fb-sdk-loaded'));
+    // Cleanup function
+    return () => {
+      // Nothing to clean up
+    };
   }, [onSDKLoaded]);
 
   return null; // This component doesn't render anything
