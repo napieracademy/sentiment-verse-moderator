@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Corpo del gatto -->
+  <path d="M100,180 C140,180 160,150 160,120 C160,90 140,60 100,60 C60,60 40,90 40,120 C40,150 60,180 100,180 Z" fill="#FFFFFF" stroke="#000000" stroke-width="3" />
+  
+  <!-- Testa del gatto -->
+  <circle cx="100" cy="100" r="35" fill="#FFFFFF" stroke="#000000" stroke-width="3" />
+  
+  <!-- Orecchie -->
+  <path d="M70,65 L85,85 L60,90 Z" fill="#FFFFFF" stroke="#000000" stroke-width="3" />
+  <path d="M130,65 L115,85 L140,90 Z" fill="#FFFFFF" stroke="#000000" stroke-width="3" />
+  
+  <!-- Occhiali -->
+  <circle cx="85" cy="95" r="15" fill="none" stroke="#000000" stroke-width="4" />
+  <circle cx="115" cy="95" r="15" fill="none" stroke="#000000" stroke-width="4" />
+  <circle cx="85" cy="95" r="8" fill="#000000" />
+  <circle cx="115" cy="95" r="8" fill="#000000" />
+  <line x1="100" y1="95" x2="85" y2="95" stroke="#000000" stroke-width="4" />
+  <line x1="100" y1="95" x2="115" y2="95" stroke="#000000" stroke-width="4" />
+  
+  <!-- Bocca -->
+  <path d="M90,115 C95,125 105,125 110,115" fill="none" stroke="#000000" stroke-width="2" />
+  
+  <!-- Baffi -->
+  <line x1="80" y1="110" x2="60" y2="105" stroke="#000000" stroke-width="1" />
+  <line x1="80" y1="110" x2="60" y2="110" stroke="#000000" stroke-width="1" />
+  <line x1="80" y1="110" x2="60" y2="115" stroke="#000000" stroke-width="1" />
+  <line x1="120" y1="110" x2="140" y2="105" stroke="#000000" stroke-width="1" />
+  <line x1="120" y1="110" x2="140" y2="110" stroke="#000000" stroke-width="1" />
+  <line x1="120" y1="110" x2="140" y2="115" stroke="#000000" stroke-width="1" />
+  
+  <!-- Coda -->
+  <path d="M140,150 C170,160 180,130 185,110" fill="none" stroke="#000000" stroke-width="3" />
+  
+  <!-- Zampa che saluta -->
+  <path d="M70,130 C60,110 50,105 40,110" fill="none" stroke="#000000" stroke-width="3" />
+  
+  <!-- Segni di movimento vicino alla zampa -->
+  <line x1="35" y1="115" x2="30" y2="110" stroke="#000000" stroke-width="2" />
+  <line x1="32" y1="103" x2="27" y2="98" stroke="#000000" stroke-width="2" />
+  <line x1="38" y1="103" x2="33" y2="98" stroke="#000000" stroke-width="2" />
+</svg> 
