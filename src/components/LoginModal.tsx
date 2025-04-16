@@ -92,7 +92,7 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
     }
     
     onOpenChange(false);
-    navigate('/select-page');
+    navigate('/welcome');
   };
 
   return (
