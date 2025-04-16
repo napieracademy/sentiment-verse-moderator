@@ -768,7 +768,7 @@ const FacebookData = () => {
   return (
     <div className="min-h-screen flex flex-col">
       
-      <main className="flex-1 p-6 bg-gray-50">
+      <main className="flex-1 p-6 bg-white">
         <div className="container mx-auto space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Moderazione Facebook</h1>
@@ -1077,7 +1077,7 @@ const FacebookData = () => {
                         ) : (
                           <>
                             {/* Barra selezione multipla */}
-                            <div className="p-3 bg-gray-50 border-b flex justify-between items-center">
+                            <div className="p-3 bg-white border-b flex justify-between items-center">
                               <div className="flex items-center gap-2">
                                 <Checkbox
                                   id="selectAllComments"
@@ -1226,7 +1226,7 @@ const FacebookData = () => {
                       ) : (
                         <>
                           {/* Barra selezione multipla */}
-                          <div className="p-3 bg-gray-50 border-b flex justify-between items-center">
+                          <div className="p-3 bg-white border-b flex justify-between items-center">
                             <div className="flex items-center gap-2">
                               <Checkbox
                                 id="selectAllCommentsGlobal"
