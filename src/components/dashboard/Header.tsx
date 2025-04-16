@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router-dom";
-import { Bell, BarChart2, MessageSquare, Database, Heart, Activity, LogOut, User, Facebook } from "lucide-react";
+import { BarChart2, Database, Heart, Activity, LogOut, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
@@ -20,7 +20,6 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -132,112 +131,65 @@ const Header = () => {
             </nav>
           )}
         </div>
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="relative"
-              onClick={() => setNotificationsVisible(!notificationsVisible)}
-            >
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-              </span>
-            </Button>
-            
-            {notificationsVisible && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-20 border">
-                <div className="p-3 border-b">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-medium">Notifiche</h3>
-                    <Button variant="ghost" size="sm">Segna tutto come letto</Button>
+        <div className="flex items-center">
+          {loadingUser ? (
+            <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
+          ) : user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-auto px-2 space-x-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage 
+                      src={user.user_metadata?.avatar_url || ''} 
+                      alt={user.user_metadata?.name || user.email || 'User Avatar'} 
+                    />
+                    <AvatarFallback>
+                      {user.user_metadata?.name?.charAt(0) || user.email?.charAt(0)?.toUpperCase() || '?'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden sm:inline text-sm font-medium">
+                    {user.user_metadata?.name || user.email}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {user.user_metadata?.name || 'Utente'}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email}
+                    </p>
                   </div>
-                </div>
-                <div className="max-h-72 overflow-y-auto">
-                  {[
-                    { id: 1, title: "Nuovo commento", desc: "Mario ha commentato il tuo post", time: "2 minuti fa", unread: true },
-                    { id: 2, title: "Sentiment negativo", desc: "Rilevato commento con sentiment negativo", time: "10 minuti fa", unread: true },
-                    { id: 3, title: "Aggiornamento automazione", desc: "L'automazione 'Risposte automatiche' è stata attivata", time: "1 ora fa", unread: false },
-                    { id: 4, title: "Nuovo follower", desc: "Luigi ha iniziato a seguire la tua pagina", time: "3 ore fa", unread: false }
-                  ].map(notif => (
-                    <div key={notif.id} className={`p-3 hover:bg-gray-50 transition-colors cursor-pointer ${notif.unread ? 'border-l-4 border-blue-500' : ''}`}>
-                      <div className="font-medium text-sm">{notif.title}</div>
-                      <div className="text-xs text-gray-600">{notif.desc}</div>
-                      <div className="text-xs text-gray-500 mt-1">{notif.time}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="p-2 border-t bg-gray-50">
-                  <Button variant="ghost" size="sm" className="w-full text-sm">
-                    Visualizza tutte le notifiche
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            {loadingUser ? (
-              <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
-            ) : user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-auto px-2 space-x-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage 
-                        src={user.user_metadata?.avatar_url || ''} 
-                        alt={user.user_metadata?.name || user.email || 'User Avatar'} 
-                      />
-                      <AvatarFallback>
-                        {user.user_metadata?.name?.charAt(0) || user.email?.charAt(0)?.toUpperCase() || '?'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="hidden sm:inline text-sm font-medium">
-                      {user.user_metadata?.name || user.email}
-                    </span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {user.user_metadata?.name || 'Utente'}
-                      </p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {user.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logout</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button 
-                onClick={handleLogin} 
-                size="sm" 
-                disabled={isLoggingIn}
-                className="flex items-center gap-2"
-              >
-                {isLoggingIn ? (
-                  <>
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
-                    <span>Accesso...</span>
-                  </>
-                ) : (
-                  <>
-                    <Facebook className="h-4 w-4" />
-                    <span>Login</span>
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button 
+              onClick={handleLogin} 
+              size="sm" 
+              disabled={isLoggingIn}
+              className="flex items-center gap-2"
+            >
+              {isLoggingIn ? (
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                  <span>Accesso...</span>
+                </>
+              ) : (
+                <>
+                  <Facebook className="h-4 w-4" />
+                  <span>Login</span>
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </div>
     </header>
