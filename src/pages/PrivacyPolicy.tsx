@@ -8,16 +8,16 @@ const PrivacyPolicy: React.FC = () => {
         
         <div className="prose prose-sm sm:prose lg:prose-lg">
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Introduzione</h2>
-            <p>
-              La presente Privacy Policy descrive come SentimentVerse raccoglie, utilizza e condivide i dati personali 
-              quando utilizzi la nostra applicazione di moderazione dei commenti per Facebook.
+            <h2 className="font-semibold text-lg mb-2">Introduzione</h2>
+            <p className="mb-4">
+              La presente Privacy Policy descrive come SentimentVerse raccoglie, utilizza e condivide i dati personali
+              quando utilizzi la nostra applicazione.
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Dati raccolti</h2>
-            <p>
+            <h2 className="font-semibold text-lg mb-2">Raccolta dei dati</h2>
+            <p className="mb-4">
               Quando utilizzi SentimentVerse, raccogliamo le seguenti informazioni:
             </p>
             <ul className="list-disc pl-5 mt-2">
